@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Litepay — Instant Recharge</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iJTIzOGI1Y2Y2Ii8+PHBhdGggZD0iTTE5IDNMOSAxN2g4bC0zIDEyTDI4IDE1aC05eiIgZmlsbD0id2hpdGUiLz48L3N2Zz4="/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<style>
+/* ═══════════════════════════════ USER STYLES ═══════════════════════════════ */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080810;--surface:#10101e;--card:#13132a;
+  --border:rgba(139,92,246,0.15);--violet:#8b5cf6;--violet2:#a78bfa;
+  --glow:rgba(139,92,246,0.35);--text:#e8e8f4;--muted:#6b6b8a;
+  --danger:#f87171;--success:#34d399;--warn:#fbbf24;
+  --mtn:#fbbf24;--airtel:#f87171;--glo:#34d399;--mobile9:#60a5fa;--wa:#25D366;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;overflow:hidden}
+*{cursor:none!important}
+#cursor{position:fixed;pointer-events:none;z-index:9999;width:10px;height:10px;background:var(--violet);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--glow)}
+#cring{position:fixed;pointer-events:none;z-index:9998;width:28px;height:28px;border:1.5px solid rgba(139,92,246,0.45);border-radius:50%;transform:translate(-50%,-50%)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.bg1{position:fixed;pointer-events:none;z-index:0;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.1),transparent 70%);top:-150px;right:-150px}
+.bg2{position:fixed;pointer-events:none;z-index:0;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,0.06),transparent 70%);bottom:-100px;left:-100px}
+
+.screen{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;transform:translateY(10px)}
+.screen.active{opacity:1;pointer-events:all;transform:translateY(0)}
+
+/* AUTH */
+.auth-wrap{width:100%;max-width:390px;padding:24px;max-height:100vh;overflow-y:auto}
+.auth-wrap::-webkit-scrollbar{width:3px}
+.auth-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.logo-icon{width:35px;height:35px;border-radius:9px;background:linear-gradient(135deg,var(--violet),#60a5fa);display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 18px var(--glow)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;background:linear-gradient(90deg,var(--text),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.5px;margin-bottom:4px}
+.auth-sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.field input{width:100%;padding:11px 13px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,92,246,0.12)}
+.field input::placeholder{color:var(--muted)}
+.field-hint{font-size:10px;color:var(--muted);margin-top:4px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.field-row .field{margin-bottom:0}
+.btn-main{width:100%;padding:13px;background:linear-gradient(135deg,var(--violet),#7c3aed);border:none;border-radius:11px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;box-shadow:0 8px 22px rgba(139,92,246,0.38);transition:transform .15s,box-shadow .15s,opacity .2s}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(139,92,246,0.48)}
+.btn-main:active{transform:translateY(1px)}
+.btn-main:disabled{opacity:.4;transform:none;box-shadow:none}
+.auth-switch{text-align:center;margin-top:14px;font-size:12px;color:var(--muted)}
+.auth-switch span{color:var(--violet2);font-weight:600;text-decoration:underline}
+.auth-err{font-size:12px;color:var(--danger);background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.18);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:none}
+.auth-err.show{display:block}
+
+/* APP */
+#screen-app{flex-direction:column;padding:0;align-items:stretch;justify-content:flex-start;overflow:hidden}
+.app-inner{display:flex;flex-direction:column;width:100%;max-width:440px;height:100vh;margin:0 auto;overflow:hidden}
+.topbar{padding:13px 18px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;background:linear-gradient(90deg,var(--text),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--violet),#60a5fa);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff}
+.user-lbl{font-size:12px;font-weight:500}
+.logout-btn{font-size:11px;color:var(--muted);background:none;border:none;text-decoration:underline;padding:0}
+.logout-btn:hover{color:var(--danger)}
+.tabbar{display:flex;padding:8px 18px 0;flex-shrink:0;border-bottom:1px solid var(--border);gap:2px}
+.tab-btn{flex:1;padding:8px 4px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.tab-btn.active{color:var(--violet2);border-color:var(--violet)}
+.tab-content{flex:1;overflow-y:auto;padding:14px 18px 28px}
+.tab-content::-webkit-scrollbar{width:3px}
+.tab-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.panel{display:none}.panel.active{display:block}
+.sec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:9px;color:var(--text)}
+
+/* BALANCE */
+.bal-card{background:linear-gradient(135deg,#1a1040,#0d0d24);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.bal-card::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.25),transparent 70%);pointer-events:none}
+.bal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;position:relative;z-index:1}
+.bal-label{font-size:10px;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px}
+.bal-amt{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-1px}
+.bal-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.fund-btn{padding:8px 13px;background:rgba(139,92,246,0.2);border:1.5px solid rgba(139,92,246,0.4);border-radius:9px;color:var(--violet2);font-family:'Syne',sans-serif;font-weight:700;font-size:11px;white-space:nowrap;flex-shrink:0;transition:background .18s,transform .15s;z-index:2;position:relative}
+.fund-btn:hover{background:rgba(139,92,246,0.3);transform:translateY(-1px)}
+
+/* NETWORK */
+.net-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.net-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;transition:border-color .18s,background .18s,transform .13s;font-size:10px;font-weight:500;color:var(--muted)}
+.net-icon{width:27px;height:27px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:'Syne',sans-serif;color:#000}
+.net-btn[data-net="mtn"] .net-icon{background:var(--mtn)}
+.net-btn[data-net="airtel"] .net-icon{background:var(--airtel)}
+.net-btn[data-net="glo"] .net-icon{background:var(--glo)}
+.net-btn[data-net="9mobile"] .net-icon{background:var(--mobile9)}
+.net-btn.sel{border-color:var(--violet);background:rgba(139,92,246,0.09);color:var(--text)}
+.net-btn.autodet{border-color:var(--success)!important;background:rgba(52,211,153,0.07)!important}
+.net-btn:hover{transform:translateY(-2px)}
+
+/* PHONE */
+.ph-wrap{margin-bottom:14px}
+.ph-row{display:flex;gap:6px}
+.ph-pre{padding:10px 11px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px;white-space:nowrap;flex-shrink:0}
+.ph-inp{flex:1;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.ph-inp:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,92,246,0.11)}
+.ph-inp::placeholder{color:var(--muted)}
+.det-bdg{display:none;align-items:center;gap:6px;margin-top:6px;padding:6px 11px;border-radius:8px;font-size:11px;font-weight:500;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--success)}
+.det-bdg.show{display:flex}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;animation:bp 1.5s ease infinite}
+@keyframes bp{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* TYPE */
+.type-tog{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:3px;margin-bottom:13px;border:1px solid var(--border)}
+.type-btn{flex:1;padding:8px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-radius:8px;transition:background .18s,color .18s}
+.type-btn.active{background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.28)}
+
+/* AMOUNTS */
+.amt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.amt-btn{padding:10px 4px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-align:center;transition:border-color .18s,color .18s,background .18s,transform .13s}
+.amt-btn.sel{border-color:var(--violet);background:rgba(139,92,246,0.1);color:var(--violet2)}
+.amt-btn:hover{transform:translateY(-1px);border-color:rgba(139,92,246,0.38)}
+.cust-row{display:flex;gap:6px;margin-bottom:14px}
+.cust-inp{flex:1;padding:10px 12px;background:var(--surface);border:1.5px dashed rgba(139,92,246,0.28);border-radius:9px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;outline:none;transition:border-color .2s}
+.cust-inp:focus{border-color:var(--violet);border-style:solid;box-shadow:0 0 0 3px rgba(139,92,246,0.1)}
+.cust-inp::placeholder{font-family:'DM Sans',sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+.cust-apply{padding:10px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;color:var(--violet2);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;white-space:nowrap;transition:background .18s}
+.cust-apply:hover{background:rgba(139,92,246,0.1);border-color:var(--violet)}
+
+/* DATA PLANS */
+.data-sec{display:none;margin-bottom:14px}
+.data-sec.show{display:block}
+.net-plans{display:none}
+.net-plans.active{display:block}
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.plan-card{padding:11px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;text-align:left;transition:border-color .18s,background .18s,transform .12s;position:relative;overflow:hidden;color:var(--text)}
+.plan-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.plans-mtn .plan-card::before{background:var(--mtn)}
+.plans-airtel .plan-card::before{background:var(--airtel)}
+.plans-glo .plan-card::before{background:var(--glo)}
+.plans-9mobile .plan-card::before{background:var(--mobile9)}
+.plan-card:hover{transform:translateY(-1px);border-color:rgba(139,92,246,0.38)}
+.plan-card.sel{border-color:var(--violet);background:rgba(139,92,246,0.09)}
+.plan-size{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;line-height:1;color:var(--text)}
+.plan-val{font-size:10px;color:var(--muted);margin:2px 0 5px}
+.plan-price{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--violet2)}
+.no-net{padding:16px;text-align:center;color:var(--muted);font-size:12px;background:var(--surface);border:1px dashed var(--border);border-radius:10px}
+
+/* BUY BTN */
+.buy-btn{width:100%;padding:13px;border:none;background:linear-gradient(135deg,var(--violet),#7c3aed);border-radius:11px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(139,92,246,0.35);transition:transform .15s,box-shadow .15s,opacity .2s;position:relative;overflow:hidden}
+.buy-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.09),transparent);pointer-events:none}
+.buy-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(139,92,246,0.48)}
+.buy-btn:active{transform:scale(0.98)}
+.buy-btn:disabled{opacity:.35;transform:none;box-shadow:none}
+
+/* HISTORY */
+.tx-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);animation:fi .28s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.tx-ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.tx-ico.airtime{background:rgba(251,191,36,0.1)}
+.tx-ico.data{background:rgba(96,165,250,0.1)}
+.tx-ico.wallet{background:rgba(52,211,153,0.1)}
+.tx-info{flex:1;min-width:0}
+.tx-title{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-meta{font-size:10px;color:var(--muted);margin-top:1px}
+.tx-right{text-align:right;flex-shrink:0}
+.tx-amt{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
+.tx-amt.debit{color:var(--danger)}.tx-amt.credit{color:var(--success)}
+.tx-st{font-size:10px;margin-top:2px}
+.tx-st.ok{color:var(--success)}.tx-st.pending{color:var(--warn)}.tx-st.failed{color:var(--danger)}
+.empty-st{text-align:center;padding:44px 0;color:var(--muted)}
+.empty-st .ei{font-size:28px;margin-bottom:9px}
+.empty-st p{font-size:12px;line-height:1.6}
+
+/* WHATSAPP */
+.wa-card{background:linear-gradient(135deg,rgba(37,211,102,0.07),rgba(37,211,102,0.02));border:1px solid rgba(37,211,102,0.18);border-radius:14px;padding:16px;margin-bottom:14px}
+.wa-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.wa-ico{width:40px;height:40px;border-radius:10px;background:var(--wa);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 4px 12px rgba(37,211,102,0.3)}
+.wa-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.wa-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.wa-num-box{background:rgba(0,0,0,0.28);border:1px solid rgba(37,211,102,0.14);border-radius:10px;padding:11px 13px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.wa-num-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.wa-num-val{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--wa)}
+.wa-copy{padding:6px 12px;background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.22);border-radius:7px;color:var(--wa);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;transition:background .18s}
+.wa-copy:hover{background:rgba(37,211,102,0.22)}
+.wa-fmt{background:rgba(0,0,0,0.28);border:1px solid rgba(37,211,102,0.12);border-radius:9px;padding:11px 13px;margin-bottom:10px}
+.wa-fmt-line{font-size:12px;color:var(--muted);margin-bottom:4px;line-height:1.5}
+.wa-fmt-line strong{color:var(--text);font-weight:600}
+.wa-eg{font-size:11px;color:rgba(52,211,153,0.7);font-style:italic;margin-top:6px}
+.wa-note{font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:12px}
+.btn-wa{width:100%;padding:12px;background:var(--wa);border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .18s,transform .15s;box-shadow:0 6px 18px rgba(37,211,102,0.28)}
+.btn-wa:hover{opacity:.92;transform:translateY(-1px)}
+
+/* MODALS */
+.modal{position:fixed;inset:0;z-index:1000;background:rgba(4,4,14,0.8);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+.modal.open{opacity:1;pointer-events:all}
+.msheet{width:100%;max-width:440px;background:#0e0e22;border:1px solid rgba(139,92,246,0.2);border-bottom:none;border-radius:20px 20px 0 0;padding:22px 20px 34px;transform:translateY(100%);transition:transform .36s cubic-bezier(.32,0,.67,0);max-height:88vh;overflow-y:auto}
+.msheet::-webkit-scrollbar{width:3px}
+.msheet::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.modal.open .msheet{transform:translateY(0);transition-timing-function:cubic-bezier(.34,1.5,.64,1)}
+.msheet:not(.modal *){/* prevents event.stopPropagation issue */}
+.mhandle{width:36px;height:4px;background:rgba(139,92,246,0.25);border-radius:4px;margin:0 auto 18px}
+.mtitle{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px}
+.msub{color:var(--muted);font-size:12px;margin-bottom:16px}
+.mclose-link{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:underline}
+
+/* FUND MODAL */
+.fund-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.fund-pre{padding:11px 4px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-align:center;transition:border-color .18s,color .18s,background .18s,transform .13s}
+.fund-pre.sel{border-color:var(--success);background:rgba(52,211,153,0.08);color:var(--success)}
+.fund-pre:hover{transform:translateY(-1px);border-color:rgba(52,211,153,0.38)}
+.fund-cust-row{display:flex;gap:6px;margin-bottom:16px}
+.fund-cust{flex:1;padding:10px 12px;background:var(--surface);border:1.5px dashed rgba(52,211,153,0.22);border-radius:9px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;outline:none;transition:border-color .2s}
+.fund-cust:focus{border-color:var(--success);border-style:solid}
+.fund-cust::placeholder{font-family:'DM Sans',sans-serif;font-weight:400;font-size:12px;color:var(--muted)}
+.btn-paystack{width:100%;padding:13px;background:linear-gradient(135deg,#0ba4db,#0055de);border:none;border-radius:11px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 22px rgba(11,164,219,0.3);transition:transform .15s,box-shadow .15s,opacity .2s}
+.btn-paystack:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(11,164,219,0.4)}
+.btn-paystack:disabled{opacity:.4;transform:none}
+.paystack-note{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+
+/* SPINNER */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;z-index:2000;transform:translateX(-50%) translateY(70px);padding:10px 18px;border-radius:11px;font-size:12px;font-weight:500;white-space:nowrap;box-shadow:0 6px 22px rgba(0,0,0,0.45);transition:transform .32s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* WA FLOAT */
+.wa-float{position:fixed;bottom:20px;right:20px;z-index:500;width:48px;height:48px;background:var(--wa);border:none;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 18px rgba(37,211,102,0.38);transition:transform .18s}
+.wa-float.show{display:flex}
+.wa-float:hover{transform:scale(1.08)}
+
+@keyframes rip{to{transform:scale(4);opacity:0}}
+.rdot{position:absolute;border-radius:50%;background:rgba(255,255,255,0.25);pointer-events:none;animation:rip .48s linear forwards}
+
+/* ── BIOMETRIC ── */
+.bio-divider{display:flex;align-items:center;gap:8px;margin:12px 0;color:var(--muted);font-size:11px}
+.bio-divider::before,.bio-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.bio-login-btn{width:100%;padding:11px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .2s,color .2s,background .2s}
+.bio-login-btn:hover{border-color:var(--violet);color:var(--violet2);background:rgba(139,92,246,0.07)}
+.bio-login-btn:disabled{opacity:.35;pointer-events:none}
+
+/* Bio setup prompt (shows after first login) */
+.bio-prompt-overlay{position:fixed;inset:0;z-index:1100;background:rgba(4,4,14,0.85);backdrop-filter:blur(12px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.bio-prompt-overlay.open{opacity:1;pointer-events:all}
+.bio-prompt-sheet{width:100%;max-width:440px;background:#0e0e22;border:1px solid var(--border);border-bottom:none;border-radius:22px 22px 0 0;padding:24px 22px 36px;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,0,.67,0)}
+.bio-prompt-overlay.open .bio-prompt-sheet{transform:translateY(0);transition-timing-function:cubic-bezier(.34,1.56,.64,1)}
+.bio-prompt-icon{font-size:44px;text-align:center;margin-bottom:14px}
+.bio-prompt-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;text-align:center;margin-bottom:6px}
+.bio-prompt-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.55;margin-bottom:22px}
+.bio-prompt-btns{display:flex;flex-direction:column;gap:10px}
+.btn-bio-enable{width:100%;padding:14px;background:linear-gradient(135deg,var(--violet),#7c3aed);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;box-shadow:0 8px 22px rgba(139,92,246,0.38);transition:transform .15s}
+.btn-bio-enable:hover{transform:translateY(-2px)}
+.btn-bio-skip{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;transition:color .2s,border-color .2s}
+.btn-bio-skip:hover{color:var(--text);border-color:rgba(139,92,246,0.3)}
+
+/* Payment confirm overlay */
+.pay-bio-overlay{position:fixed;inset:0;z-index:1200;background:rgba(4,4,14,0.88);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.pay-bio-overlay.open{opacity:1;pointer-events:all}
+.pay-bio-box{width:calc(100% - 40px);max-width:340px;background:#0e0e22;border:1px solid var(--border);border-radius:20px;padding:28px 24px;text-align:center;transform:scale(.94) translateY(10px);transition:transform .28s cubic-bezier(.34,1.56,.64,1)}
+.pay-bio-overlay.open .pay-bio-box{transform:scale(1) translateY(0)}
+.pay-bio-icon{font-size:48px;margin-bottom:14px;display:block}
+.pay-bio-label{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.pay-bio-amount{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;letter-spacing:-1px;color:var(--text);margin-bottom:4px}
+.pay-bio-detail{font-size:12px;color:var(--muted);margin-bottom:22px}
+.pay-bio-prompt{font-size:13px;color:var(--violet2);font-weight:500;margin-bottom:20px}
+.pay-bio-actions{display:flex;flex-direction:column;gap:9px}
+.btn-pay-bio{width:100%;padding:14px;background:linear-gradient(135deg,var(--violet),#7c3aed);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 22px rgba(139,92,246,0.38);transition:transform .15s,opacity .2s}
+.btn-pay-bio:hover{transform:translateY(-2px)}
+.btn-pay-bio:disabled{opacity:.4;transform:none}
+.btn-pay-cancel{width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;transition:color .2s}
+.btn-pay-cancel:hover{color:var(--danger)}
+.bio-status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:8px}
+.bio-status-pill.on{background:rgba(52,211,153,0.1);color:var(--success);border:1px solid rgba(52,211,153,0.2)}
+.bio-status-pill.off{background:rgba(139,92,246,0.08);color:var(--muted);border:1px solid var(--border)}
+
+
+/* ═══════════════════════ ADMIN STYLES (scoped #admin-root) ═════════════════ */
+#admin-root{
+  position:fixed;inset:0;z-index:10;
+  --bg:#06060f;--surf:#0f0f1e;--card:#131328;
+  --b:rgba(139,92,246,0.14);--v:#8b5cf6;--v2:#a78bfa;
+  --txt:#e8e8f4;--m:#5a5a7a;--m2:#9090b0;
+  --ok:#34d399;--err:#f87171;--warn:#fbbf24;--info:#60a5fa;
+  --sb-w:210px;--sb-w-col:56px;
+  background:var(--bg);color:var(--txt);
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  overflow:hidden;display:none;
+}
+
+*, *::before, *::after {box-sizing:border-box;margin:0;padding:0}
+#admin-root {
+  --bg:#06060f;--surf:#0f0f1e;--card:#131328;
+  --b:rgba(139,92,246,0.14);--v:#8b5cf6;--v2:#a78bfa;
+  --txt:#e8e8f4;--m:#5a5a7a;--m2:#9090b0;
+  --ok:#34d399;--err:#f87171;--warn:#fbbf24;--info:#60a5fa;
+  --sb-w:210px;--sb-w-col:56px;
+}
+
+
+/* ── LOGIN ── */
+#admin-root .login-wrap {position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:200}
+#admin-root .lbox {width:340px;background:var(--card);border:1px solid var(--b);border-radius:18px;padding:32px 28px;box-shadow:0 24px 60px rgba(0,0,0,0.55)}
+#admin-root .lgo {display:flex;align-items:center;gap:9px;margin-bottom:26px}
+#admin-root .lgo-ico {width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--v),#60a5fa);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 16px rgba(139,92,246,0.4)}
+#admin-root .lgo-txt {font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--txt)}
+#admin-root .lgo-bdg {font-size:9px;background:rgba(139,92,246,0.18);border:1px solid rgba(139,92,246,0.28);color:var(--v2);padding:2px 7px;border-radius:20px;font-weight:700;letter-spacing:.3px}
+#admin-root .l-title {font-family:'Syne',sans-serif;font-weight:700;font-size:21px;margin-bottom:3px}
+#admin-root .l-sub {font-size:12px;color:var(--m2);margin-bottom:20px}
+#admin-root .l-err {font-size:12px;color:var(--err);background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.16);border-radius:8px;padding:7px 11px;margin-bottom:10px;display:none}
+#admin-root .l-err.show {display:block}
+#admin-root .lf label {display:block;font-size:10px;color:var(--m2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+#admin-root .lf input {width:100%;padding:11px 13px;background:var(--surf);border:1px solid var(--b);border-radius:9px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;margin-bottom:13px}
+#admin-root .lf input:focus {border-color:var(--v)}
+#admin-root .lf input::placeholder {color:var(--m)}
+#admin-root .l-btn {width:100%;padding:12px;background:linear-gradient(135deg,var(--v),#7c3aed);border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;transition:transform .15s,opacity .2s;box-shadow:0 8px 22px rgba(139,92,246,0.35)}
+#admin-root .l-btn:hover {transform:translateY(-2px)}
+#admin-root .l-divider {display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--m);font-size:11px}
+#admin-root .l-divider::before, #admin-root .l-divider::after {content:'';flex:1;height:1px;background:var(--b)}
+#admin-root .bio-btn {width:100%;padding:11px;background:var(--surf);border:1.5px solid var(--b);border-radius:10px;color:var(--m2);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .2s,color .2s,background .2s}
+#admin-root .bio-btn:hover {border-color:var(--v);color:var(--v2);background:rgba(139,92,246,0.07)}
+#admin-root .bio-btn:disabled {opacity:.4;pointer-events:none}
+#admin-root .l-hint {font-size:11px;color:var(--m);text-align:center;margin-top:10px}
+
+/* ── SHELL ── */
+#admin-root .shell {display:flex;height:100vh;width:100vw;overflow:hidden}
+
+/* ── SIDEBAR ── */
+#admin-root .sb {
+  width:var(--sb-w);
+  flex-shrink:0;
+  background:var(--card);
+  border-right:1px solid var(--b);
+  display:flex;flex-direction:column;
+  height:100vh;overflow:hidden;
+  transition:width .25s cubic-bezier(.4,0,.2,1);
+}
+#admin-root .sb.collapsed {width:var(--sb-w-col)}
+
+/* Header row with toggle */
+#admin-root .sb-head {
+  padding:14px 12px;
+  border-bottom:1px solid var(--b);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  overflow:hidden;
+}
+#admin-root .sb-logo-row {display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0}
+#admin-root .sb-ico {width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--v),#60a5fa);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+#admin-root .sb-label-group {display:flex;align-items:center;gap:6px;overflow:hidden;transition:opacity .2s,width .25s}
+#admin-root .sb-name {font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--txt);white-space:nowrap}
+#admin-root .sb-adm {font-size:9px;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.2);color:var(--err);padding:2px 6px;border-radius:20px;font-weight:700;white-space:nowrap}
+#admin-root .sb.collapsed .sb-label-group {opacity:0;pointer-events:none;width:0;overflow:hidden}
+
+/* Toggle btn */
+#admin-root .sb-toggle {
+  flex-shrink:0;width:26px;height:26px;border-radius:7px;
+  background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);
+  color:var(--v2);font-size:13px;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,transform .25s;
+  cursor:default!important;
+}
+#admin-root .sb-toggle:hover {background:rgba(139,92,246,0.2)}
+#admin-root .sb.collapsed .sb-toggle {transform:rotate(180deg)}
+
+/* Nav */
+#admin-root .sb-nav {flex:1;padding:8px 6px;overflow-y:auto;overflow-x:hidden}
+#admin-root .sb-nav::-webkit-scrollbar {display:none}
+#admin-root .nav-btn {
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:9px 10px;border:none;background:transparent;
+  color:var(--m2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  border-radius:8px;transition:background .15s,color .15s;text-align:left;
+  margin-bottom:2px;white-space:nowrap;overflow:hidden;
+}
+#admin-root .nav-btn:hover {background:rgba(139,92,246,0.07);color:var(--txt)}
+#admin-root .nav-btn.active {background:rgba(139,92,246,0.12);color:var(--v2)}
+#admin-root .nav-btn .ni {font-size:15px;width:20px;text-align:center;flex-shrink:0}
+#admin-root .nav-lbl {transition:opacity .2s;white-space:nowrap}
+#admin-root .sb.collapsed .nav-lbl {opacity:0;width:0;overflow:hidden}
+#admin-root .sb.collapsed .nav-btn {justify-content:center;padding:9px 0}
+
+/* Tooltip on collapsed */
+#admin-root .sb.collapsed .nav-btn {position:relative}
+#admin-root .sb.collapsed .nav-btn::after {
+  content:attr(data-tip);
+  position:absolute;left:calc(var(--sb-w-col) - 2px);
+  background:var(--card);border:1px solid var(--b);
+  color:var(--txt);font-size:12px;font-weight:500;
+  padding:5px 10px;border-radius:7px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .15s;
+  z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+}
+#admin-root .sb.collapsed .nav-btn:hover::after {opacity:1}
+
+/* Footer */
+#admin-root .sb-foot {padding:8px 6px;border-top:1px solid var(--b);flex-shrink:0;overflow:hidden}
+#admin-root .sb-who {padding:8px 10px;background:var(--surf);border-radius:8px;margin-bottom:6px;overflow:hidden;transition:opacity .2s}
+#admin-root .sb-who-lbl {font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+#admin-root .sb-who-name {font-size:12px;font-weight:600;white-space:nowrap}
+#admin-root .sb.collapsed .sb-who {opacity:0;height:0;padding:0;margin:0;overflow:hidden}
+#admin-root .logout-nav {display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;background:transparent;color:var(--m);font-size:12px;border-radius:8px;transition:color .15s,background .15s;text-align:left;white-space:nowrap;overflow:hidden}
+#admin-root .logout-nav:hover {color:var(--err);background:rgba(248,113,113,0.06)}
+#admin-root .sb.collapsed .logout-nav {justify-content:center;padding:8px 0}
+#admin-root .sb.collapsed .logout-nav .logout-lbl {display:none}
+
+/* ── MAIN ── */
+#admin-root .main {flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#admin-root .main-inner {flex:1;overflow-y:auto;padding:20px 22px 28px}
+#admin-root .main-inner::-webkit-scrollbar {width:4px}
+#admin-root .main-inner::-webkit-scrollbar-thumb {background:var(--b);border-radius:4px}
+#admin-root .pg {display:none}#admin-root .pg.active {display:block}
+#admin-root .pg-title {font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.4px;margin-bottom:2px}
+#admin-root .pg-sub {font-size:12px;color:var(--m2);margin-bottom:18px}
+
+/* ── STATS ── */
+#admin-root .stats {display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:1050px){#admin-root .stats {grid-template-columns:repeat(4,1fr)}}
+#admin-root .sc {background:var(--card);border:1px solid var(--b);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+#admin-root .sc::after {content:'';position:absolute;top:-16px;right:-16px;width:64px;height:64px;border-radius:50%;opacity:.15}
+#admin-root .sc.v::after {background:var(--v)}#admin-root .sc.g::after {background:var(--ok)}#admin-root .sc.b::after {background:var(--info)}#admin-root .sc.w::after {background:#f59e0b}
+#admin-root .sc-lbl {font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+#admin-root .sc-val {font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px}
+#admin-root .sc.v .sc-val {color:var(--v2)}#admin-root .sc.g .sc-val {color:var(--ok)}#admin-root .sc.b .sc-val {color:var(--info)}#admin-root .sc.w .sc-val {color:var(--warn)}
+#admin-root .sc-note {font-size:10px;color:var(--m);margin-top:3px}
+
+/* ── SECTION HEADER ── */
+#admin-root .sec-hd {display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+#admin-root .sec-ttl {font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+
+/* ── TABLE ── */
+#admin-root .tbl-wrap {background:var(--card);border:1px solid var(--b);border-radius:12px;overflow:hidden;margin-bottom:18px;-webkit-overflow-scrolling:touch}
+#admin-root .tbl-sc {overflow-x:auto;-webkit-overflow-scrolling:touch}#admin-root .tbl-sc::-webkit-scrollbar {height:3px}#admin-root .tbl-sc::-webkit-scrollbar-thumb {background:var(--b);border-radius:4px}
+#admin-root table {width:100%;border-collapse:collapse;min-width:480px}
+#admin-root thead tr {background:var(--surf)}
+#admin-root th {padding:10px 12px;text-align:left;font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:.4px;font-weight:600;white-space:nowrap;border-bottom:1px solid var(--b)}
+#admin-root td {padding:10px 12px;font-size:12px;border-bottom:1px solid rgba(139,92,246,0.06);vertical-align:middle}
+#admin-root tr:last-child td {border-bottom:none}
+#admin-root tr:hover td {background:rgba(139,92,246,0.025)}
+#admin-root .td-b {font-weight:600;font-family:'Syne',sans-serif;font-size:13px}
+#admin-root .td-m {color:var(--m2);font-size:11px}
+#admin-root .empty-row td {text-align:center;padding:28px;color:var(--m2)}
+
+/* BADGES */
+#admin-root .bdg {display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;gap:3px}
+#admin-root .bdg.ok {background:rgba(52,211,153,0.1);color:var(--ok);border:1px solid rgba(52,211,153,0.2)}
+#admin-root .bdg.fail {background:rgba(248,113,113,0.1);color:var(--err);border:1px solid rgba(248,113,113,0.2)}
+#admin-root .bdg.pend {background:rgba(251,191,36,0.1);color:var(--warn);border:1px solid rgba(251,191,36,0.2)}
+#admin-root .bdg.fund {background:rgba(96,165,250,0.1);color:var(--info);border:1px solid rgba(96,165,250,0.2)}
+#admin-root .bdg.air {background:rgba(251,191,36,0.1);color:#fbbf24}
+#admin-root .bdg.dat {background:rgba(96,165,250,0.1);color:var(--info)}
+#admin-root .ndot {display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+#admin-root .ndot.mtn {background:#fbbf24}#admin-root .ndot.airtel {background:#f87171}#admin-root .ndot.glo {background:#34d399}#admin-root .ndot.nine {background:#60a5fa}
+
+/* ACTION BTNS */
+#admin-root .ab {padding:4px 10px;border-radius:6px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;transition:background .15s;border:1px solid transparent;cursor:default!important}
+#admin-root .ab.cr {background:rgba(52,211,153,0.1);color:var(--ok);border-color:rgba(52,211,153,0.2)}#admin-root .ab.cr:hover {background:rgba(52,211,153,0.2)}
+#admin-root .ab.db {background:rgba(248,113,113,0.1);color:var(--err);border-color:rgba(248,113,113,0.2)}#admin-root .ab.db:hover {background:rgba(248,113,113,0.2)}
+#admin-root .ab.vw {background:rgba(139,92,246,0.1);color:var(--v2);border-color:rgba(139,92,246,0.2)}#admin-root .ab.vw:hover {background:rgba(139,92,246,0.2)}
+#admin-root .ab.prim {background:linear-gradient(135deg,var(--v),#7c3aed);color:#fff;border:none;padding:6px 16px}
+#admin-root .ab.suc {background:linear-gradient(135deg,#059669,var(--ok));color:#fff;border:none;padding:6px 16px}
+#admin-root .ab.dan {background:linear-gradient(135deg,#dc2626,var(--err));color:#fff;border:none;padding:6px 16px}
+#admin-root .ref-btn {padding:7px 13px;background:rgba(139,92,246,0.1);border:1px solid var(--b);border-radius:8px;color:var(--v2);font-size:12px;font-weight:600;transition:background .15s;white-space:nowrap}
+#admin-root .ref-btn:hover {background:rgba(139,92,246,0.18)}
+
+/* FILTER BAR */
+#admin-root .fbar {display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+#admin-root .fi {padding:8px 12px;background:var(--surf);border:1px solid var(--b);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+#admin-root .fi:focus {border-color:var(--v)}#admin-root .fi::placeholder {color:var(--m)}#admin-root .fi-grow {flex:1;min-width:160px}
+#admin-root select.fi option {background:var(--card)}
+
+/* CREDIT PAGE */
+#admin-root .cp-grid {display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:880px){#admin-root .cp-grid {grid-template-columns:1fr}}
+#admin-root .cp-card {background:var(--card);border:1px solid var(--b);border-radius:12px;padding:16px}
+#admin-root .cp-card-title {font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:14px}
+#admin-root .mf {margin-bottom:12px}
+#admin-root .mf label {display:block;font-size:10px;color:var(--m2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+#admin-root .mf input, #admin-root .mf select {width:100%;padding:10px 12px;background:var(--surf);border:1px solid var(--b);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+#admin-root .mf input:focus, #admin-root .mf select:focus {border-color:var(--v)}#admin-root .mf input::placeholder {color:var(--m)}#admin-root .mf select option {background:var(--card)}
+#admin-root .mf-hint {font-size:10px;color:var(--m2);margin-top:4px}
+#admin-root .act-row {display:flex;gap:8px;margin-top:4px}#admin-root .act-row .ab {flex:1;padding:10px;font-size:12px;text-align:center}
+#admin-root .log-item {display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--b)}
+#admin-root .log-item:last-child {border-bottom:none}
+#admin-root .log-name {font-size:12px;font-weight:600}#admin-root .log-note {font-size:10px;color:var(--m2);margin-top:1px}
+#admin-root .log-amt {font-family:'Syne',sans-serif;font-weight:700;font-size:13px}#admin-root .log-time {font-size:10px;color:var(--m2);text-align:right}
+#admin-root .log-empty {text-align:center;padding:20px;color:var(--m2);font-size:12px}
+#admin-root .log-scroll {max-height:260px;overflow-y:auto}#admin-root .log-scroll::-webkit-scrollbar {width:3px}#admin-root .log-scroll::-webkit-scrollbar-thumb {background:var(--b);border-radius:4px}
+
+/* PLANS PAGE */
+#admin-root .plan-editor {margin-bottom:20px}
+#admin-root .net-tab-row {display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+#admin-root .net-tab {padding:7px 16px;background:var(--surf);border:1.5px solid var(--b);border-radius:8px;color:var(--m2);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;transition:all .15s}
+#admin-root .net-tab.active {border-color:var(--v);background:rgba(139,92,246,0.1);color:var(--v2)}
+#admin-root .net-tab:hover {border-color:rgba(139,92,246,0.3);color:var(--txt)}
+#admin-root .net-tab .ndot {margin-right:5px}
+#admin-root .plan-net-section {display:none}#admin-root .plan-net-section.active {display:block}
+#admin-root .plan-row {display:grid;grid-template-columns:1fr 1fr 90px 36px;gap:6px;align-items:end;padding:10px 12px;background:var(--surf);border:1px solid var(--b);border-radius:9px;margin-bottom:7px}
+#admin-root .plan-row input {padding:8px 10px;background:var(--card);border:1px solid var(--b);border-radius:7px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;transition:border-color .2s}
+#admin-root .plan-row input:focus {border-color:var(--v)}
+#admin-root .plan-row-lbl {font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+#admin-root .plan-price-inp {font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+#admin-root .del-plan-btn {padding:7px 6px;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:7px;color:var(--err);font-size:14px;line-height:1;transition:background .15s;text-align:center;align-self:end;margin-bottom:1px}
+#admin-root .del-plan-btn:hover {background:rgba(248,113,113,0.2)}
+#admin-root .add-plan-btn {display:flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(139,92,246,0.08);border:1.5px dashed rgba(139,92,246,0.25);border-radius:9px;color:var(--v2);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;transition:background .15s,border-color .15s;margin-bottom:14px}
+#admin-root .add-plan-btn:hover {background:rgba(139,92,246,0.14);border-color:rgba(139,92,246,0.4)}
+#admin-root .save-plans-btn {padding:10px 22px;background:linear-gradient(135deg,var(--v),#7c3aed);border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(139,92,246,0.3);transition:transform .15s}
+#admin-root .save-plans-btn:hover {transform:translateY(-2px)}
+#admin-root .plan-col-headers {display:grid;grid-template-columns:1fr 1fr 90px 36px;gap:6px;padding:4px 12px;margin-bottom:4px}
+#admin-root .plan-col-headers span {font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:.4px}
+
+/* SETTINGS */
+#admin-root .settings-card {background:var(--card);border:1px solid var(--b);border-radius:12px;overflow:hidden;margin-bottom:14px}
+#admin-root .s-row {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b);flex-wrap:wrap}
+#admin-root .s-row:last-child {border-bottom:none}
+#admin-root .s-label {font-weight:600;font-size:13px;margin-bottom:3px}
+#admin-root .s-desc {font-size:11px;color:var(--m2);line-height:1.4;max-width:200px}
+#admin-root .s-ctrl {flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:160px;max-width:100%}
+#admin-root .s-inp {width:100%;padding:8px 11px;background:var(--surf);border:1px solid var(--b);border-radius:8px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;transition:border-color .2s}
+#admin-root .s-inp:focus {border-color:var(--v)}
+#admin-root .s-save {padding:6px 14px;background:rgba(139,92,246,0.14);border:1px solid rgba(139,92,246,0.24);border-radius:7px;color:var(--v2);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;transition:background .15s;align-self:flex-end;white-space:nowrap}
+#admin-root .s-save:hover {background:rgba(139,92,246,0.24)}
+
+/* BIO STATUS */
+#admin-root .bio-status {display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;font-size:11px;margin-top:6px;line-height:1.4;max-width:200px}
+#admin-root .bio-status.enrolled {background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--ok)}
+#admin-root .bio-status.none {background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.14);color:var(--m2)}
+
+/* MODAL */
+#admin-root .modal {position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.72);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+#admin-root .modal.open {opacity:1;pointer-events:all}
+#admin-root .mbox {background:var(--card);border:1px solid var(--b);border-radius:14px;padding:24px;width:360px;max-width:calc(100vw - 32px);box-shadow:0 20px 60px rgba(0,0,0,0.6);transform:scale(.96) translateY(8px);transition:transform .25s}
+#admin-root .modal.open .mbox {transform:scale(1) translateY(0)}
+#admin-root .mb-title {font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:3px}
+#admin-root .mb-sub {font-size:12px;color:var(--m2);margin-bottom:18px}
+#admin-root .mb-btns {display:flex;gap:8px;margin-top:18px}#admin-root .mb-btns .ab {flex:1;padding:10px;font-size:12px;text-align:center}
+#admin-root .mb-cancel {background:var(--surf);color:var(--m2);border:1px solid var(--b)}
+
+/* TOAST */
+#admin-root .toast {position:fixed;bottom:20px;right:20px;z-index:400;padding:10px 16px;border-radius:10px;font-size:12px;font-weight:500;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;transform:translateY(20px);opacity:0;pointer-events:none}
+#admin-root .toast.show {transform:translateY(0);opacity:1}
+
+/* ── MOBILE OVERRIDES ── */
+@media(max-width:640px){
+  /* Settings rows stack vertically on small screens */
+  #admin-root .s-row {flex-direction:column;gap:10px}
+  #admin-root .s-ctrl {align-items:flex-start;min-width:unset;width:100%}
+  #admin-root .s-desc {max-width:unset}
+  #admin-root .s-inp {width:100%}
+  /* Plan rows: stack size+validity on top, price+delete on bottom */
+  #admin-root .plan-row {grid-template-columns:1fr 1fr 80px 36px;gap:5px}
+  /* Stat cards: 2 per row but smaller font */
+  #admin-root .sc-val {font-size:18px}
+  /* Filter bar: search takes full width */
+  #admin-root .fi-grow {width:100%;flex:unset}
+  /* Page title smaller */
+  #admin-root .pg-title {font-size:17px}
+  /* CP grid single column */
+  #admin-root .cp-grid {grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+
+<!-- USER ROOT (default) -->
+<div id="user-root">
+<div id="cursor"></div><div id="cring"></div>
+<div class="bg1"></div><div class="bg2"></div>
+<button class="wa-float" id="wa-float" onclick="openWaModal()">💬</button>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div class="screen active" id="screen-auth">
+  <div class="auth-wrap">
+    <div class="logo"><div class="logo-icon">⚡</div><span class="logo-name">Litepay</span></div>
+    <div class="auth-title" id="atitle">Welcome back</div>
+    <div class="auth-sub" id="asub">Sign in to top up in seconds.</div>
+    <div class="auth-err" id="auth-err"></div>
+
+    <div id="signup-extra" style="display:none">
+      <div class="field"><label>Full Name</label><input type="text" id="inp-name" placeholder="Your full name"/></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" id="inp-rphone" maxlength="11" placeholder="08012345678" oninput="this.value=this.value.replace(/\D/g,'')"/>
+        </div>
+        <div class="field">
+          <label>NIN</label>
+          <input type="tel" id="inp-nin" maxlength="11" placeholder="12345678901" oninput="this.value=this.value.replace(/\D/g,'')"/>
+          <div class="field-hint">11-digit National ID</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field"><label>Email</label><input type="email" id="inp-email" placeholder="you@example.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••"/></div>
+    <button class="btn-main" id="auth-btn" onclick="handleAuth()">Sign In</button>
+    <div id="bio-login-wrap" style="display:none">
+      <div class="bio-divider">or</div>
+      <button class="bio-login-btn" id="bio-login-btn" onclick="bioLoginUser()">
+        <span id="bio-btn-icon">👆</span>
+        <span id="bio-btn-txt">Sign in with Fingerprint / Face ID</span>
+      </button>
+    </div>
+    <div class="auth-switch">
+      <span id="aswitch-txt">Don't have an account?</span>
+      <span id="aswitch-lnk" onclick="toggleAuth()" style="margin-left:4px"> Sign up</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP SCREEN ══ -->
+<div class="screen" id="screen-app">
+  <div class="app-inner">
+    <div class="topbar">
+      <div class="topbar-logo">⚡ Litepay</div>
+      <div class="topbar-r">
+        <span class="user-lbl" id="disp-name">User</span>
+        <div class="avatar" id="disp-av">U</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="tabbar">
+      <button class="tab-btn active" onclick="switchTab('topup',this)">Top Up</button>
+      <button class="tab-btn" onclick="switchTab('history',this)">History</button>
+      <button class="tab-btn" onclick="switchTab('wa',this)">WhatsApp</button>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- TOP UP -->
+      <div class="panel active" id="panel-topup">
+        <div class="bal-card">
+          <div class="bal-row">
+            <div>
+              <div class="bal-label">Wallet Balance</div>
+              <div class="bal-amt">₦<span id="wallet-bal">0</span></div>
+              <div class="bal-sub">Available for recharge</div>
+            </div>
+            <button class="fund-btn" onclick="openFundModal()">＋ Fund Wallet</button>
+          </div>
+        </div>
+
+        <div class="sec-title">Select Network</div>
+        <div class="net-grid">
+          <button class="net-btn" data-net="mtn" onclick="pickNet(this)"><div class="net-icon">M</div><span>MTN</span></button>
+          <button class="net-btn" data-net="airtel" onclick="pickNet(this)"><div class="net-icon">A</div><span>Airtel</span></button>
+          <button class="net-btn" data-net="glo" onclick="pickNet(this)"><div class="net-icon">G</div><span>Glo</span></button>
+          <button class="net-btn" data-net="9mobile" onclick="pickNet(this)"><div class="net-icon">9</div><span>9mobile</span></button>
+        </div>
+
+        <div class="sec-title">Phone Number</div>
+        <div class="ph-wrap">
+          <div class="ph-row">
+            <div class="ph-pre">🇳🇬 +234</div>
+            <input class="ph-inp" id="ph-inp" type="tel" maxlength="11" placeholder="08012345678" oninput="onPhone(this)"/>
+          </div>
+          <div class="det-bdg" id="det-bdg"><div class="bdot"></div><span id="det-txt">Detected</span></div>
+        </div>
+
+        <div class="type-tog">
+          <button class="type-btn active" onclick="switchType('airtime',this)">📞 Airtime</button>
+          <button class="type-btn" onclick="switchType('data',this)">📶 Data</button>
+        </div>
+
+        <!-- Airtime -->
+        <div id="sec-air">
+          <div class="sec-title">Amount</div>
+          <div class="amt-grid">
+            <button class="amt-btn" onclick="pickAmt(this,50)">₦50</button>
+            <button class="amt-btn" onclick="pickAmt(this,100)">₦100</button>
+            <button class="amt-btn" onclick="pickAmt(this,200)">₦200</button>
+            <button class="amt-btn" onclick="pickAmt(this,500)">₦500</button>
+            <button class="amt-btn" onclick="pickAmt(this,1000)">₦1,000</button>
+            <button class="amt-btn" onclick="pickAmt(this,2000)">₦2,000</button>
+          </div>
+          <div class="cust-row">
+            <input class="cust-inp" id="cust-air" type="number" min="50" placeholder="Custom amount e.g. 750" oninput="onCustInp(this)"/>
+            <button class="cust-apply" onclick="applyCustom('airtime')">Apply</button>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="data-sec" id="sec-data">
+          <div class="sec-title" id="data-title">Select Network First</div>
+          <div class="no-net" id="no-net-msg">👆 Pick a network above to see data plans</div>
+
+          <!-- Plans rendered dynamically by JS (prices editable from admin) -->
+          <div class="net-plans plans-mtn" id="plans-mtn"><div class="plan-grid" id="pg-mtn"></div></div>
+          <div class="net-plans plans-airtel" id="plans-airtel"><div class="plan-grid" id="pg-airtel"></div></div>
+          <div class="net-plans plans-glo" id="plans-glo"><div class="plan-grid" id="pg-glo"></div></div>
+          <div class="net-plans plans-9mobile" id="plans-9mobile"><div class="plan-grid" id="pg-9mobile"></div></div>
+
+          <div class="cust-row" style="margin-top:10px">
+            <input class="cust-inp" id="cust-data" type="number" min="100" placeholder="Custom amount" oninput="onCustInp(this)"/>
+            <button class="cust-apply" onclick="applyCustom('data')">Apply</button>
+          </div>
+        </div>
+
+        <button class="buy-btn" id="buy-btn" onclick="doBuy(this)" disabled>⚡ Recharge Now</button>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="panel" id="panel-history">
+        <div class="sec-title">Transactions</div>
+        <div id="tx-list"><div class="empty-st"><div class="ei">🧾</div><p>No transactions yet.<br/>Fund your wallet and top up!</p></div></div>
+      </div>
+
+      <!-- WHATSAPP -->
+      <div class="panel" id="panel-wa">
+        <div class="wa-card">
+          <div class="wa-top">
+            <div class="wa-ico">💬</div>
+            <div><div class="wa-title">Order via WhatsApp</div><div class="wa-sub">Fast top-up — just message us</div></div>
+          </div>
+          <div class="wa-num-box">
+            <div><div class="wa-num-lbl">WhatsApp Number</div><div class="wa-num-val">0704 709 6637</div></div>
+            <button class="wa-copy" onclick="cpyWa()">Copy</button>
+          </div>
+          <div class="wa-fmt">
+            <div class="wa-fmt-line">📞 <strong>Airtime:</strong> BUY AIRTIME [phone] [amount]</div>
+            <div class="wa-fmt-line">📶 <strong>Data:</strong> BUY DATA [phone] [size] [network]</div>
+            <div class="wa-eg">e.g. BUY AIRTIME 08012345678 500</div>
+            <div class="wa-eg">e.g. BUY DATA 08055555555 2GB MTN</div>
+          </div>
+          <div class="wa-note">Send your order and we'll deduct from your wallet and deliver your airtime or data instantly.</div>
+          <button class="btn-wa" onclick="openWA()">💬 Open WhatsApp Chat</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ FUND MODAL ══ -->
+<div class="modal" id="fund-modal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">Fund Wallet 💳</div>
+    <div class="msub">Secure payment via Paystack — card, bank transfer or USSD.</div>
+    <div class="fund-grid">
+      <button class="fund-pre" onclick="pickFund(this,500)">₦500</button>
+      <button class="fund-pre" onclick="pickFund(this,1000)">₦1,000</button>
+      <button class="fund-pre" onclick="pickFund(this,2000)">₦2,000</button>
+      <button class="fund-pre" onclick="pickFund(this,5000)">₦5,000</button>
+      <button class="fund-pre" onclick="pickFund(this,10000)">₦10,000</button>
+      <button class="fund-pre" onclick="pickFund(this,20000)">₦20,000</button>
+    </div>
+    <div class="fund-cust-row">
+      <input class="fund-cust" id="fund-cust" type="number" min="100" placeholder="Or enter a custom amount…" oninput="onFundCust(this)"/>
+    </div>
+    <button class="btn-paystack" id="pay-btn" onclick="startPaystack()" disabled>
+      <span id="pay-btn-txt">Select an amount to continue</span>
+    </button>
+    <p class="paystack-note">🔒 Powered by Paystack · Card, Transfer & USSD accepted</p>
+    <span class="mclose-link" onclick="closeFundModal()">Cancel</span>
+  </div>
+</div>
+
+<!-- ══ WA MODAL ══ -->
+<div class="modal" id="wa-modal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">WhatsApp Orders 💬</div>
+    <div class="msub">Top up fast — just send a message.</div>
+    <div class="wa-num-box" style="margin-bottom:12px">
+      <div><div class="wa-num-lbl">WhatsApp Number</div><div class="wa-num-val">0704 709 6637</div></div>
+      <button class="wa-copy" onclick="cpyWa()">Copy</button>
+    </div>
+    <div class="wa-fmt" style="margin-bottom:12px">
+      <div class="wa-fmt-line">📞 <strong>Airtime:</strong> BUY AIRTIME [phone] [amount]</div>
+      <div class="wa-fmt-line">📶 <strong>Data:</strong> BUY DATA [phone] [size] [network]</div>
+      <div class="wa-eg">e.g. BUY AIRTIME 08012345678 500</div>
+      <div class="wa-eg">e.g. BUY DATA 08055555555 2GB MTN</div>
+    </div>
+    <button class="btn-wa" onclick="openWA()">💬 Open WhatsApp</button>
+    <span class="mclose-link" onclick="closeWaModal()">Close</span>
+  </div>
+</div>
+
+<!-- ══ BIO SETUP PROMPT ══ -->
+<div class="bio-prompt-overlay" id="bio-setup-overlay">
+  <div class="bio-prompt-sheet">
+    <div class="bio-prompt-icon">👆</div>
+    <div class="bio-prompt-title">Speed Up Your Logins</div>
+    <div class="bio-prompt-sub">Enable fingerprint or Face ID to sign in instantly next time — no password needed.</div>
+    <div class="bio-prompt-btns">
+      <button class="btn-bio-enable" onclick="doEnableBiometrics()">Enable Biometric Login</button>
+      <button class="btn-bio-skip" onclick="closeBioPrompt(false)">Maybe Later</button>
+      <button class="btn-bio-skip" style="color:var(--muted);font-size:11px;padding:4px;border:none;background:transparent" onclick="closeBioPrompt(true)">Don't ask again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT BIO CONFIRM ══ -->
+<div class="pay-bio-overlay" id="pay-bio-overlay">
+  <div class="pay-bio-box">
+    <span class="pay-bio-icon">👆</span>
+    <div class="pay-bio-label">Confirm Payment</div>
+    <div class="pay-bio-amount" id="pbo-amount">₦0</div>
+    <div class="pay-bio-detail" id="pbo-detail">Airtime recharge</div>
+    <div class="pay-bio-prompt">Verify with Fingerprint or Face ID to proceed</div>
+    <div class="pay-bio-actions">
+      <button class="btn-pay-bio" id="pbo-bio-btn" onclick="confirmPayWithBio()">
+        <span>👆</span> Verify &amp; Pay
+      </button>
+      <button class="btn-pay-cancel" onclick="cancelPayBio()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<!-- ADMIN ROOT (?admin URL) -->
+<div id="admin-root">
+<!-- ══ LOGIN ══ -->
+<div class="login-wrap" id="login-wrap">
+  <div class="lbox">
+    <div class="lgo"><div class="lgo-ico">⚡</div><span class="lgo-txt">Litepay</span><span class="lgo-bdg">ADMIN</span></div>
+    <div class="l-title">Admin Panel</div>
+    <div class="l-sub">Sign in to manage your platform</div>
+    <div class="l-err" id="l-err">Incorrect password</div>
+    <div class="lf">
+      <label>Password</label>
+      <input type="password" id="adm-pass" placeholder="Enter admin password"/>
+    </div>
+    <button class="l-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="l-divider">or</div>
+    <button class="bio-btn" id="bio-login-btn" onclick="bioLogin()" disabled>
+      <span id="bio-icon">🔒</span> <span id="bio-login-txt">Biometrics not set up</span>
+    </button>
+    <p class="l-hint">Default password: <strong>litepay2024</strong></p>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div class="shell" id="shell" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div class="sb" id="sb">
+    <div class="sb-head">
+      <div class="sb-logo-row">
+        <div class="sb-ico">⚡</div>
+        <div class="sb-label-group">
+          <span class="sb-name">Litepay</span>
+          <span class="sb-adm">ADMIN</span>
+        </div>
+      </div>
+      <button class="sb-toggle" onclick="toggleSb()" title="Toggle sidebar">‹</button>
+    </div>
+
+    <div class="sb-nav">
+      <button class="nav-btn active" data-tip="Dashboard" onclick="goPage('dashboard',this)"><span class="ni">📊</span><span class="nav-lbl">Dashboard</span></button>
+      <button class="nav-btn" data-tip="Users" onclick="goPage('users',this)"><span class="ni">👥</span><span class="nav-lbl">Users</span></button>
+      <button class="nav-btn" data-tip="Transactions" onclick="goPage('transactions',this)"><span class="ni">📋</span><span class="nav-lbl">Transactions</span></button>
+      <button class="nav-btn" data-tip="Credit Wallet" onclick="goPage('credit',this)"><span class="ni">💰</span><span class="nav-lbl">Credit Wallet</span></button>
+      <button class="nav-btn" data-tip="Data Plans" onclick="goPage('plans',this)"><span class="ni">📶</span><span class="nav-lbl">Data Plans</span></button>
+      <button class="nav-btn" data-tip="Settings" onclick="goPage('settings',this)"><span class="ni">⚙️</span><span class="nav-lbl">Settings</span></button>
+    </div>
+
+    <div class="sb-foot">
+      <div class="sb-who">
+        <div class="sb-who-lbl">Signed in as</div>
+        <div class="sb-who-name">Administrator</div>
+      </div>
+      <button class="logout-nav" onclick="doLogout()">🚪 <span class="logout-lbl">Sign out</span></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-inner">
+
+      <!-- DASHBOARD -->
+      <div class="pg active" id="pg-dashboard">
+        <div class="pg-title">Dashboard</div>
+        <div class="pg-sub">Your Litepay business at a glance</div>
+        <div class="stats">
+          <div class="sc v"><div class="sc-lbl">Total Users</div><div class="sc-val" id="s-users">0</div><div class="sc-note">Registered accounts</div></div>
+          <div class="sc g"><div class="sc-lbl">Total Wallet Balance</div><div class="sc-val" id="s-bal">₦0</div><div class="sc-note">Across all wallets</div></div>
+          <div class="sc b"><div class="sc-lbl">Total Orders</div><div class="sc-val" id="s-orders">0</div><div class="sc-note">Airtime + Data</div></div>
+          <div class="sc w"><div class="sc-lbl">Revenue Collected</div><div class="sc-val" id="s-rev">₦0</div><div class="sc-note">Funded via Paystack</div></div>
+        </div>
+        <div class="sec-hd"><span class="sec-ttl">Recent Transactions</span><button class="ref-btn" onclick="loadDashboard()">↻ Refresh</button></div>
+        <div class="tbl-wrap"><div class="tbl-sc"><table><thead><tr><th>User</th><th>Type</th><th>Network</th><th>Phone</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody id="dash-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="pg" id="pg-users">
+        <div class="pg-title">Users</div>
+        <div class="pg-sub">All registered accounts</div>
+        <div class="fbar">
+          <input class="fi fi-grow" id="u-search" placeholder="Search name or email…" oninput="renderUsers()"/>
+          <button class="ref-btn" onclick="loadUsers()">↻ Refresh</button>
+        </div>
+        <div class="tbl-wrap"><div class="tbl-sc"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Balance</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="pg" id="pg-transactions">
+        <div class="pg-title">Transactions</div>
+        <div class="pg-sub">All orders and funding history</div>
+        <div class="fbar">
+          <input class="fi fi-grow" id="tx-search" placeholder="Search user or phone…" oninput="renderTxs()"/>
+          <select class="fi" id="tx-type" onchange="renderTxs()">
+            <option value="">All Types</option><option value="fund">Wallet Fund</option>
+            <option value="airtime">Airtime</option><option value="data">Data</option>
+          </select>
+          <select class="fi" id="tx-status" onchange="renderTxs()">
+            <option value="">All Status</option><option value="success">Success</option>
+            <option value="failed">Failed</option><option value="pending">Pending</option>
+          </select>
+          <button class="ref-btn" onclick="loadTxs()">↻ Refresh</button>
+        </div>
+        <div class="tbl-wrap"><div class="tbl-sc"><table><thead><tr><th>Ref</th><th>User</th><th>Type</th><th>Network</th><th>Detail</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody id="txs-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- CREDIT WALLET -->
+      <div class="pg" id="pg-credit">
+        <div class="pg-title">Credit Wallet</div>
+        <div class="pg-sub">Add or deduct funds from any user's wallet</div>
+        <div class="cp-grid">
+          <div class="cp-card">
+            <div class="cp-card-title">💰 Adjust Balance</div>
+            <div class="mf"><label>Select User</label><select id="c-user"></select></div>
+            <div class="mf"><label>Amount (₦)</label><input type="number" id="c-amt" placeholder="e.g. 1000" min="1"/><div class="mf-hint">Enter amount — choose Credit or Debit below</div></div>
+            <div class="mf"><label>Reason / Note (shown to user)</label><input type="text" id="c-note" placeholder="e.g. Transfer confirmed via bank"/></div>
+            <div class="act-row">
+              <button class="ab suc" onclick="doCredit()">＋ Credit</button>
+              <button class="ab dan" onclick="doDebit()">− Debit</button>
+            </div>
+          </div>
+          <div class="cp-card">
+            <div class="cp-card-title">📜 Admin Log</div>
+            <div class="log-scroll" id="credit-log"><div class="log-empty">No admin adjustments yet</div></div>
+          </div>
+        </div>
+        <div class="sec-hd"><span class="sec-ttl">All User Balances</span></div>
+        <div class="tbl-wrap"><div class="tbl-sc"><table><thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Quick Action</th></tr></thead><tbody id="bal-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- DATA PLANS EDITOR -->
+      <div class="pg" id="pg-plans">
+        <div class="pg-title">Data Plans</div>
+        <div class="pg-sub">Edit prices and plans for each network — changes reflect instantly on the app</div>
+        <div class="net-tab-row">
+          <button class="net-tab active" data-net="mtn" onclick="switchPlanNet('mtn',this)"><span class="ndot mtn"></span>MTN</button>
+          <button class="net-tab" data-net="airtel" onclick="switchPlanNet('airtel',this)"><span class="ndot airtel"></span>Airtel</button>
+          <button class="net-tab" data-net="glo" onclick="switchPlanNet('glo',this)"><span class="ndot glo"></span>Glo</button>
+          <button class="net-tab" data-net="9mobile" onclick="switchPlanNet('9mobile',this)"><span class="ndot nine"></span>9mobile</button>
+        </div>
+        <div id="plan-editor-wrap">
+          <div class="plan-col-headers"><span>Data Size</span><span>Validity</span><span>Price (₦)</span><span></span></div>
+          <div id="plan-rows"></div>
+          <button class="add-plan-btn" onclick="addPlanRow()">＋ Add Plan</button>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="save-plans-btn" onclick="savePlans()">💾 Save Plans</button>
+            <button class="ref-btn" onclick="resetPlans()">↺ Reset to Defaults</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="pg" id="pg-settings">
+        <div class="pg-title">Settings</div>
+        <div class="pg-sub">Configure your Litepay platform</div>
+        <div class="settings-card">
+          <div class="s-row">
+            <div><div class="s-label">Admin Password</div><div class="s-desc">Change your dashboard login password</div></div>
+            <div class="s-ctrl">
+              <input class="s-inp" type="password" id="new-p1" placeholder="New password"/>
+              <input class="s-inp" type="password" id="new-p2" placeholder="Confirm password"/>
+              <button class="s-save" onclick="changePass()">Save Password</button>
+            </div>
+          </div>
+          <div class="s-row">
+            <div>
+              <div class="s-label">Biometric Login</div>
+              <div class="s-desc">Use fingerprint or Face ID to access the admin dashboard</div>
+              <div class="bio-status" id="bio-status-display"></div>
+            </div>
+            <div class="s-ctrl">
+              <button class="s-save" id="bio-setup-btn" onclick="setupBiometrics()">Set Up Biometrics</button>
+              <button class="s-save" id="bio-remove-btn" onclick="removeBiometrics()" style="background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.2);color:var(--err);display:none">Remove Biometrics</button>
+            </div>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Paystack Public Key</div><div class="s-desc">dashboard.paystack.com → Settings → API Keys</div></div>
+            <div class="s-ctrl"><input class="s-inp" id="s-ps" placeholder="pk_live_xxxxxxxxxxxx"/><button class="s-save" onclick="saveSetting('ps_pk','s-ps')">Save</button></div>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">VTpass API Key</div><div class="s-desc">vtpass.com → API Settings</div></div>
+            <div class="s-ctrl"><input class="s-inp" id="s-vt" placeholder="Your VTpass API key"/><button class="s-save" onclick="saveSetting('vt_key','s-vt')">Save</button></div>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">VTpass Mode</div><div class="s-desc">Sandbox = testing · Live = real transactions</div></div>
+            <div class="s-ctrl"><select class="s-inp" id="s-vtm"><option value="sandbox">Sandbox (Testing)</option><option value="live">Live (Production)</option></select><button class="s-save" onclick="saveVtMode()">Save</button></div>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">WhatsApp Number</div><div class="s-desc">Business number for order notifications</div></div>
+            <div class="s-ctrl"><input class="s-inp" id="s-wa" value="07047096637"/><button class="s-save" onclick="saveSetting('wa_num','s-wa')">Save</button></div>
+          </div>
+          <div class="s-row" style="border-bottom:none">
+            <div><div class="s-label" style="color:var(--err)">⚠️ Clear All Data</div><div class="s-desc">Permanently delete all users and transactions</div></div>
+            <div class="s-ctrl"><button class="ab dan" style="padding:8px 16px" onclick="confirmClear()">Clear All Data</button></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- main-inner -->
+  </div><!-- main -->
+</div><!-- shell -->
+
+<!-- CREDIT MODAL -->
+<div class="modal" id="mod-credit">
+  <div class="mbox">
+    <div class="mb-title" id="mod-c-title">Credit Wallet</div>
+    <div class="mb-sub" id="mod-c-sub">Add funds to user wallet</div>
+    <div class="mf"><label>User</label><input type="text" id="mod-c-user" readonly/></div>
+    <div class="mf"><label>Current Balance</label><input type="text" id="mod-c-bal" readonly/></div>
+    <div class="mf"><label>Amount (₦)</label><input type="number" id="mod-c-amt" placeholder="e.g. 2000" min="1"/></div>
+    <div class="mf"><label>Note (shown to user)</label><input type="text" id="mod-c-note" placeholder="e.g. Transfer confirmed"/></div>
+    <div class="mb-btns">
+      <button class="ab mb-cancel" onclick="closeModal('mod-credit')">Cancel</button>
+      <button class="ab suc" id="mod-c-btn" onclick="confirmCredit()">Confirm Credit</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER VIEW MODAL -->
+<div class="modal" id="mod-user">
+  <div class="mbox">
+    <div class="mb-title">User Details</div>
+    <div class="mb-sub">Account information</div>
+    <div id="mod-u-detail"></div>
+    <div class="mb-btns">
+      <button class="ab mb-cancel" onclick="closeModal('mod-user')">Close</button>
+      <button class="ab prim" onclick="quickCredit()">Credit Wallet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  MODE — detect ?admin in URL
+// ══════════════════════════════════════════════════
+const IS_ADMIN = (()=>{
+  const s = location.search;
+  return s === '?admin' || s.startsWith('?admin&') || s.startsWith('?admin=') || location.hash === '#admin';
+})();
+
+if(IS_ADMIN){
+  document.getElementById('user-root').style.display = 'none';
+  document.getElementById('admin-root').style.display = 'block';
+  document.title = 'Litepay Admin';
+}
+
+// ══════════════════════════════════════════════════
+//  SHARED UTILITIES
+// ══════════════════════════════════════════════════
+const DB = {
+  getUsers(){ try{return JSON.parse(localStorage.getItem('lp_users')||'{}'  )}catch{return{}} },
+  saveUsers(u){ localStorage.setItem('lp_users',JSON.stringify(u)); },
+  getTxs(){ try{return JSON.parse(localStorage.getItem('lp_transactions')||'[]')}catch{return[]} },
+  saveTxs(t){ localStorage.setItem('lp_transactions',JSON.stringify(t)); },
+  getUser(e){ return this.getUsers()[e]||null; },
+  updateBalance(email,delta){
+    const users=this.getUsers();
+    if(users[email]){ users[email].balance=(users[email].balance||0)+delta; this.saveUsers(users); }
+  },
+  addTx(tx){ const txs=this.getTxs(); txs.unshift(tx); this.saveTxs(txs); },
+  userTxs(email){ return this.getTxs().filter(t=>t.userEmail===email); },
+  list(){ return Object.values(this.getUsers()); },
+  credit(email,delta,note){
+    const u=this.getUsers();
+    if(!u[email])return false;
+    u[email].balance=Math.max(0,(u[email].balance||0)+delta);
+    this.saveUsers(u);
+    const txs=this.getTxs();
+    txs.unshift({id:'ADM_'+Date.now(),userEmail:email,type:'fund',amount:Math.abs(delta),
+      status:'success',adminCredit:true,adminDebit:delta<0,note:note||'Admin adjustment',time:Date.now()});
+    this.saveTxs(txs);
+    return u[email].balance;
+  }
+};
+
+function b64url(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+function b64decode(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer;}
+function getBioRpId(){const h=location.hostname;return(h&&h!==''&&!h.includes('/'))?h:'localhost';}
+function bioProtocolOk(){const p=location.protocol;return p==='https:'||(p==='http:'&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'));}
+function fmtTime(ts){const d=new Date(ts);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+d.toLocaleDateString('en-NG');}
+
+let _toastTimer=null;
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  t.textContent=msg;
+  const c={err:['#2e1a1a','rgba(248,113,113,.25)','#f87171'],warn:['#2c2610','rgba(251,191,36,.22)','#fbbf24'],ok:['#0f2218','rgba(52,211,153,.22)','#34d399']};
+  const[bg,bd,col]=c[type]||c.ok;
+  Object.assign(t.style,{background:bg,border:`1px solid ${bd}`,color:col});
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));
+});
+
+const DEFAULT_PLANS={
+  mtn:[
+    {size:'100MB',validity:'1 day',price:100,variation:'mtn-10mb-100'},
+    {size:'200MB',validity:'3 days',price:200,variation:'mtn-200mb-200'},
+    {size:'500MB',validity:'7 days',price:300,variation:'mtn-500mb-300'},
+    {size:'1GB',validity:'30 days',price:500,variation:'mtn-1gb-500'},
+    {size:'2GB',validity:'30 days',price:1000,variation:'mtn-2gb-1000'},
+    {size:'5GB',validity:'30 days',price:1500,variation:'mtn-5gb-1500'},
+    {size:'10GB',validity:'30 days',price:3000,variation:'mtn-10gb-3000'},
+    {size:'20GB',validity:'30 days',price:5000,variation:'mtn-20gb-5000'}
+  ],
+  airtel:[
+    {size:'200MB',validity:'3 days',price:100,variation:'airtel-200mb-100'},
+    {size:'350MB',validity:'7 days',price:200,variation:'airtel-350mb-200'},
+    {size:'750MB',validity:'14 days',price:300,variation:'airtel-750mb-300'},
+    {size:'1.5GB',validity:'30 days',price:500,variation:'airtel-1.5gb-500'},
+    {size:'3GB',validity:'30 days',price:1000,variation:'airtel-3gb-1000'},
+    {size:'6GB',validity:'30 days',price:1500,variation:'airtel-6gb-1500'},
+    {size:'10GB',validity:'30 days',price:2500,variation:'airtel-10gb-2500'},
+    {size:'15GB',validity:'30 days',price:3500,variation:'airtel-15gb-3500'}
+  ],
+  glo:[
+    {size:'200MB',validity:'5 days',price:100,variation:'glo-200mb-100'},
+    {size:'1GB',validity:'7 days',price:200,variation:'glo-1gb-200'},
+    {size:'2GB',validity:'30 days',price:500,variation:'glo-2gb-500'},
+    {size:'4.5GB',validity:'30 days',price:1000,variation:'glo-4.5gb-1000'},
+    {size:'7.5GB',validity:'30 days',price:1500,variation:'glo-7.5gb-1500'},
+    {size:'12GB',validity:'30 days',price:2500,variation:'glo-12gb-2500'},
+    {size:'18GB',validity:'30 days',price:3000,variation:'glo-18gb-3000'},
+    {size:'30GB',validity:'30 days',price:4000,variation:'glo-30gb-4000'}
+  ],
+  '9mobile':[
+    {size:'150MB',validity:'7 days',price:150,variation:'etisalat-150mb-150'},
+    {size:'500MB',validity:'30 days',price:300,variation:'etisalat-500mb-300'},
+    {size:'1GB',validity:'30 days',price:500,variation:'etisalat-1gb-500'},
+    {size:'2.5GB',validity:'30 days',price:1000,variation:'etisalat-2.5gb-1000'},
+    {size:'5GB',validity:'30 days',price:2000,variation:'etisalat-5gb-2000'},
+    {size:'10GB',validity:'30 days',price:3000,variation:'etisalat-10gb-3000'},
+    {size:'11.5GB',validity:'30 days',price:3500,variation:'etisalat-11.5gb-3500'}
+  ]
+};
+function getActivePlans(){try{const s=JSON.parse(localStorage.getItem('lp_plans')||'null');if(s)return s;}catch{}return DEFAULT_PLANS;}
+function getPlans(){return getActivePlans();}
+
+// ══════════════════════════════════════════════════
+//  USER APP JS
+// ══════════════════════════════════════════════════
+if(!IS_ADMIN){
+// ═══════════════════════════════════════════════
+//  ★ CONFIG — UPDATE THESE BEFORE GOING LIVE ★
+// ═══════════════════════════════════════════════
+const CFG = {
+  // Get from dashboard.paystack.com → Settings → API Keys
+  PAYSTACK_PK: 'pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  // Get from vtpass.com → API Settings
+  VTPASS_API_KEY: 'your-vtpass-api-key',
+  VTPASS_PUBLIC_KEY: 'your-vtpass-public-key',
+  VTPASS_SECRET_KEY: 'your-vtpass-secret-key',
+  VTPASS_BASE: 'https://sandbox.vtpass.com/api', // Change to https://vtpass.com/api for live
+  WA_NUM: '2347047096637',
+  APP_NAME: 'Litepay'
+};
+
+// ═══════════════════════════════════════════════
+//  VTpass service IDs
+// ═══════════════════════════════════════════════
+const VT_SERVICE = {
+  mtn:'mtn', airtel:'airtel', glo:'glo', '9mobile':'etisalat',
+  'mtn-data':'mtn-data','airtel-data':'airtel-data','glo-data':'glo-data','9mobile-data':'etisalat-data'
+};
+
+// ═══════════════════════════════════════════════
+//  CURSOR
+// ═══════════════════════════════════════════════
+const cur=document.getElementById('cursor'),crg=document.getElementById('cring');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'});
+(function ar(){const cx=parseFloat(cur.style.left||0),cy=parseFloat(cur.style.top||0),rx=parseFloat(crg.style.left||0),ry=parseFloat(crg.style.top||0);crg.style.left=(rx+(cx-rx)*.12)+'px';crg.style.top=(ry+(cy-ry)*.12)+'px';requestAnimationFrame(ar)})();
+
+// DB defined in shared section
+
+// ═══════════════════════════════════════════════
+//  NIGERIAN PREFIX DETECTION
+// ═══════════════════════════════════════════════
+const NET_PRE={mtn:['0703','0706','0803','0806','0810','0813','0814','0816','0903','0906','0913','0916','0704'],airtel:['0701','0708','0802','0808','0812','0901','0902','0907'],glo:['0705','0805','0807','0811','0815','0905','0915'],'9mobile':['0809','0817','0818','0908','0909']};
+const NET_LBL={mtn:'MTN',airtel:'Airtel',glo:'Glo','9mobile':'9mobile'};
+function detectNet(n){const s=n.startsWith('0')?n:'0'+n,p=s.substring(0,4);for(const[k,v]of Object.entries(NET_PRE)){if(v.includes(p))return k;}return null;}
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let isLogin=true, curUser=null;
+let selNet=null, selType='airtime', selAmt=0, selPlan=null, selVariation=null;
+let fundAmt=0;
+
+// ═══════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════
+function toggleAuth(){
+  isLogin=!isLogin;
+  document.getElementById('atitle').textContent=isLogin?'Welcome back':'Create account';
+  document.getElementById('asub').textContent=isLogin?'Sign in to top up in seconds.':'Join Litepay — top up instantly.';
+  document.getElementById('auth-btn').textContent=isLogin?'Sign In':'Create Account';
+  document.getElementById('signup-extra').style.display=isLogin?'none':'block';
+  document.getElementById('aswitch-txt').textContent=isLogin?"Don't have an account?":'Already have an account?';
+  document.getElementById('aswitch-lnk').textContent=isLogin?' Sign up':' Sign in';
+  showAuthErr('');
+}
+
+function showAuthErr(msg){
+  const el=document.getElementById('auth-err');
+  el.textContent=msg; el.classList.toggle('show',!!msg);
+}
+
+function handleAuth(){
+  const email=document.getElementById('inp-email').value.trim().toLowerCase();
+  const pass=document.getElementById('inp-pass').value.trim();
+  if(!email||!pass){showAuthErr('Please fill all fields');return;}
+
+  if(!isLogin){
+    const name=document.getElementById('inp-name').value.trim();
+    const phone=document.getElementById('inp-rphone').value.trim();
+    const nin=document.getElementById('inp-nin').value.trim();
+    if(!name||!phone||!nin){showAuthErr('Please fill all fields');return;}
+    if(phone.length<11){showAuthErr('Phone number must be 11 digits');return;}
+    if(nin.length<11){showAuthErr('NIN must be 11 digits');return;}
+    const users=DB.getUsers();
+    if(users[email]){showAuthErr('Email already registered. Sign in instead.');return;}
+    users[email]={name,email,phone,nin,password:pass,balance:0,createdAt:Date.now()};
+    DB.saveUsers(users);
+    curUser=users[email];
+    toast('🎉 Account created! Welcome to Litepay.');
+  } else {
+    const user=DB.getUser(email);
+    if(!user||user.password!==pass){showAuthErr('Invalid email or password');return;}
+    curUser=user;
+  }
+
+  document.getElementById('disp-name').textContent=curUser.name.split(' ')[0];
+  document.getElementById('disp-av').textContent=curUser.name[0].toUpperCase();
+  document.getElementById('wa-float').classList.add('show');
+  refreshBalance();
+  renderHistory();
+  goScreen('screen-app');
+  // Offer biometrics after password login
+  if(isLogin) setTimeout(()=>maybeProposeBio(curUser.email),900);
+}
+
+function logout(){
+  curUser=null; selNet=null; selAmt=0; selPlan=null;
+  document.getElementById('wa-float').classList.remove('show');
+  goScreen('screen-auth');
+}
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  setTimeout(()=>document.getElementById(id).classList.add('active'),10);
+}
+
+function refreshBalance(){
+  if(!curUser) return;
+  const u=DB.getUser(curUser.email);
+  if(u){ curUser.balance=u.balance; document.getElementById('wallet-bal').textContent=u.balance.toLocaleString(); }
+}
+
+// ═══════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  if(tab==='history') renderHistory();
+}
+
+// ═══════════════════════════════════════════════
+//  NETWORK
+// ═══════════════════════════════════════════════
+function pickNet(btn,auto=false){
+  document.querySelectorAll('.net-btn').forEach(b=>b.classList.remove('sel','autodet'));
+  btn.classList.add('sel'); if(auto) btn.classList.add('autodet');
+  const prev=selNet; selNet=btn.dataset.net;
+  if(prev!==selNet&&selType==='data'){selAmt=0;selPlan=null;selVariation=null;document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('sel'));}
+  if(selType==='data') showPlans(selNet);
+  updateBuyBtn();
+}
+
+function showPlans(net){
+  document.getElementById('no-net-msg').style.display='none';
+  document.querySelectorAll('.net-plans').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('plans-'+net);
+  if(sec) sec.classList.add('active');
+  const titles={mtn:'MTN Data Plans',airtel:'Airtel Data Plans',glo:'Glo Data Plans','9mobile':'9mobile Data Plans'};
+  document.getElementById('data-title').textContent=titles[net]||'Select Plan';
+}
+
+// ═══════════════════════════════════════════════
+//  PHONE AUTO-DETECT
+// ═══════════════════════════════════════════════
+function onPhone(inp){
+  inp.value=inp.value.replace(/\D/g,'');
+  const bdg=document.getElementById('det-bdg'),dtxt=document.getElementById('det-txt');
+  if(inp.value.length>=4){
+    const net=detectNet(inp.value);
+    if(net){
+      const btn=document.querySelector(`.net-btn[data-net="${net}"]`);
+      if(btn) pickNet(btn,true);
+      dtxt.textContent=`✓ ${NET_LBL[net]} number detected`;
+      bdg.classList.add('show');
+    } else bdg.classList.remove('show');
+  } else bdg.classList.remove('show');
+  updateBuyBtn();
+}
+
+// ═══════════════════════════════════════════════
+//  TYPE SWITCH
+// ═══════════════════════════════════════════════
+function switchType(type,btn){
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selType=type; selAmt=0; selPlan=null; selVariation=null;
+  document.querySelectorAll('.amt-btn,.plan-card').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('cust-air').value='';
+  document.getElementById('cust-data').value='';
+  document.getElementById('sec-air').style.display=type==='airtime'?'block':'none';
+  const ds=document.getElementById('sec-data');
+  if(type==='data'){
+    ds.classList.add('show');
+    if(selNet) showPlans(selNet);
+    else{ document.getElementById('no-net-msg').style.display='block'; document.querySelectorAll('.net-plans').forEach(s=>s.classList.remove('active')); document.getElementById('data-title').textContent='Select Network First'; }
+  } else ds.classList.remove('show');
+  updateBuyBtn();
+}
+
+// ═══════════════════════════════════════════════
+//  AMOUNTS & PLANS
+// ═══════════════════════════════════════════════
+function pickAmt(btn,amt){
+  document.querySelectorAll('.amt-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('cust-air').value='';
+  selAmt=amt; selPlan=null; selVariation=null; updateBuyBtn();
+}
+function pickPlan(card,price,size,validity,variation){
+  document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('sel'));
+  card.classList.add('sel');
+  document.getElementById('cust-data').value='';
+  selAmt=price; selPlan=size+' – '+validity; selVariation=variation; updateBuyBtn();
+}
+function onCustInp(inp){
+  document.querySelectorAll('.amt-btn,.plan-card').forEach(b=>b.classList.remove('sel'));
+  const v=parseInt(inp.value); selAmt=(v&&v>0)?v:0; selPlan=null; selVariation=null; updateBuyBtn();
+}
+function applyCustom(t){
+  const id=t==='airtime'?'cust-air':'cust-data';
+  const v=parseInt(document.getElementById(id).value);
+  if(!v||v<50){toast('⚠️ Minimum amount is ₦50','warn');return;}
+  document.querySelectorAll('.amt-btn,.plan-card').forEach(b=>b.classList.remove('sel'));
+  selAmt=v; selPlan=null; selVariation=null; updateBuyBtn();
+  toast(`✏️ Custom ₦${v.toLocaleString()} applied`);
+}
+function updateBuyBtn(){
+  const btn=document.getElementById('buy-btn');
+  const phone=document.getElementById('ph-inp').value.trim();
+  const ok=selNet&&selAmt>0&&phone.length>=10;
+  btn.disabled=!ok;
+  btn.textContent=ok?`⚡ Pay ₦${selAmt.toLocaleString()} Now`:'⚡ Recharge Now';
+}
+
+// doBuy → see User Biometrics section below
+
+// ═══════════════════════════════════════════════
+//  RENDER HISTORY
+// ═══════════════════════════════════════════════
+function renderHistory(){
+  if(!curUser) return;
+  const list=document.getElementById('tx-list');
+  const txs=DB.userTxs(curUser.email);
+  if(!txs.length){
+    list.innerHTML='<div class="empty-st"><div class="ei">🧾</div><p>No transactions yet.<br/>Fund your wallet and start recharging!</p></div>';
+    return;
+  }
+  list.innerHTML=txs.map(tx=>{
+    const isAdminDebit=tx.adminDebit===true;
+    const isAdminCredit=tx.adminCredit===true&&!isAdminDebit;
+    const isPaystackFund=tx.type==='fund'&&!isAdminDebit&&!isAdminCredit;
+    let icon,cls,desc,meta,sign,amtCls;
+    if(isAdminDebit){
+      icon='🔻';cls='wallet';desc='Admin Adjustment';
+      meta=tx.note||'Adjustment made by admin';
+      sign='−';amtCls='debit';
+    } else if(isAdminCredit){
+      icon='💰';cls='wallet';desc='Wallet Credited';
+      meta=tx.note||'Credit added by admin';
+      sign='+';amtCls='credit';
+    } else if(isPaystackFund){
+      icon='💰';cls='wallet';desc='Wallet Funded';
+      meta='via Paystack';sign='+';amtCls='credit';
+    } else {
+      icon=tx.type==='airtime'?'📞':'📶';
+      cls=tx.type;
+      desc=tx.type==='data'?(tx.plan||'Data Plan'):'Airtime';
+      meta=(tx.phone||'')+(tx.network?' · '+tx.network:'');
+      sign='−';amtCls='debit';
+    }
+    const time=new Date(tx.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · '+new Date(tx.time).toLocaleDateString('en-NG');
+    const stMap={success:'ok',failed:'failed',pending:'pending'};
+    const stLbl={success:'✓ Successful',failed:'✗ Failed',pending:'⏳ Pending'};
+    const stClass=(isAdminDebit||isAdminCredit)?'ok':(stMap[tx.status]||'ok');
+    const stText=(isAdminDebit||isAdminCredit)?'⚙ Admin':'';
+    const statusText=stText||(stLbl[tx.status]||'✓ Done');
+    return `<div class="tx-item">
+      <div class="tx-ico ${cls}">${icon}</div>
+      <div class="tx-info">
+        <div class="tx-title">${(isAdminDebit||isAdminCredit||isPaystackFund)?'':(tx.network?tx.network+' ':'')}${desc}</div>
+        <div class="tx-meta">${meta} · ${time}</div>
+      </div>
+      <div class="tx-right">
+        <div class="tx-amt ${amtCls}">${sign}₦${tx.amount.toLocaleString()}</div>
+        <div class="tx-st ${stClass}">${statusText}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  FUND MODAL — Paystack
+// ═══════════════════════════════════════════════
+function openFundModal(){
+  fundAmt=0;
+  document.querySelectorAll('.fund-pre').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('fund-cust').value='';
+  updatePayBtn();
+  document.getElementById('fund-modal').classList.add('open');
+}
+function closeFundModal(){ document.getElementById('fund-modal').classList.remove('open'); }
+
+function pickFund(btn,amt){
+  document.querySelectorAll('.fund-pre').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); document.getElementById('fund-cust').value=''; fundAmt=amt; updatePayBtn();
+}
+function onFundCust(inp){
+  document.querySelectorAll('.fund-pre').forEach(b=>b.classList.remove('sel'));
+  fundAmt=parseInt(inp.value)||0; updatePayBtn();
+}
+function updatePayBtn(){
+  const btn=document.getElementById('pay-btn');
+  const txt=document.getElementById('pay-btn-txt');
+  btn.disabled=!fundAmt||fundAmt<100;
+  txt.textContent=fundAmt&&fundAmt>=100?`Pay ₦${fundAmt.toLocaleString()} via Paystack`:'Select an amount to continue';
+}
+
+function startPaystack(){
+  if(!fundAmt||fundAmt<100){toast('⚠️ Minimum fund amount is ₦100','warn');return;}
+  if(CFG.PAYSTACK_PK.includes('xxxx')){
+    toast('⚠️ Paystack key not set. Check CFG in the code.','warn');
+    // Demo mode — credit directly for testing
+    DB.updateBalance(curUser.email,fundAmt);
+    const tx={id:'PS_DEMO_'+Date.now(),userEmail:curUser.email,type:'fund',amount:fundAmt,status:'success',ref:'demo',time:Date.now()};
+    DB.addTx(tx);
+    refreshBalance(); renderHistory();
+    closeFundModal();
+    toast(`✅ Demo: ₦${fundAmt.toLocaleString()} added to wallet!`);
+    return;
+  }
+  const handler=PaystackPop.setup({
+    key: CFG.PAYSTACK_PK,
+    email: curUser.email,
+    amount: fundAmt*100, // kobo
+    currency: 'NGN',
+    ref: 'LP_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    metadata:{ custom_fields:[{display_name:'Customer',variable_name:'customer',value:curUser.name},{display_name:'App',variable_name:'app',value:CFG.APP_NAME}]},
+    onClose(){ toast('Payment cancelled','warn'); },
+    callback(response){
+      // Payment confirmed by Paystack
+      DB.updateBalance(curUser.email,fundAmt);
+      const tx={id:'PS_'+response.reference,userEmail:curUser.email,type:'fund',amount:fundAmt,status:'success',ref:response.reference,time:Date.now()};
+      DB.addTx(tx);
+      refreshBalance(); renderHistory();
+      closeFundModal();
+      toast(`✅ ₦${fundAmt.toLocaleString()} added to your wallet!`);
+    }
+  });
+  handler.openIframe();
+}
+
+// ═══════════════════════════════════════════════
+//  WHATSAPP
+// ═══════════════════════════════════════════════
+function openWaModal(){ document.getElementById('wa-modal').classList.add('open'); }
+function closeWaModal(){ document.getElementById('wa-modal').classList.remove('open'); }
+function openWA(){
+  const msg=encodeURIComponent('Hello Litepay! 👋 I would like to make an order.');
+  window.open(`https://wa.me/${CFG.WA_NUM}?text=${msg}`,'_blank');
+}
+function cpyWa(){
+  navigator.clipboard?.writeText('07047096637').then(()=>toast('✅ Number copied!')).catch(()=>fbCopy('07047096637'));
+  if(!navigator.clipboard) fbCopy('07047096637');
+}
+function fbCopy(txt){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('✅ Number copied!');}
+
+// Close modals on backdrop click
+['fund-modal','wa-modal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+let tTimer=null;
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  const c={err:['#2e1a1a','rgba(248,113,113,.25)','#f87171'],warn:['#2c2610','rgba(251,191,36,.22)','#fbbf24'],ok:['#0f2218','rgba(52,211,153,.22)','#34d399']};
+  const[bg,bd,col]=c[type]||c.ok;
+  Object.assign(t.style,{background:bg,border:`1px solid ${bd}`,color:col});
+  t.classList.add('show');
+  clearTimeout(tTimer); tTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════
+//  RIPPLE
+// ═══════════════════════════════════════════════
+function ripple(el,e){
+  const r=document.createElement('span'); r.className='rdot';
+  const rect=el.getBoundingClientRect(),sz=Math.max(rect.width,rect.height);
+  r.style.cssText=`width:${sz}px;height:${sz}px;left:${(e?.clientX??rect.left+rect.width/2)-rect.left-sz/2}px;top:${(e?.clientY??rect.top+rect.height/2)-rect.top-sz/2}px`;
+  el.appendChild(r); setTimeout(()=>r.remove(),480);
+}
+
+// ═══════════════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('screen-auth').classList.contains('active'))handleAuth();
+  if(e.key==='Escape'){closeFundModal();closeWaModal();}
+});
+
+
+// DEFAULT_PLANS in shared section
+
+// getActivePlans() in shared section
+
+function renderPlans(){
+  const plans=getActivePlans();
+  ['mtn','airtel','glo','9mobile'].forEach(net=>{
+    const grid=document.getElementById('pg-'+net);
+    if(!grid) return;
+    const netPlans=plans[net]||DEFAULT_PLANS[net]||[];
+    grid.innerHTML=netPlans.map(p=>`
+      <button class="plan-card" onclick="pickPlan(this,${p.price},'${p.size}','${p.validity}','${p.variation}')">
+        <div class="plan-size">${p.size}</div>
+        <div class="plan-val">${p.validity}</div>
+        <div class="plan-price">₦${p.price.toLocaleString()}</div>
+      </button>`).join('');
+  });
+}
+
+
+// ═══════════════════════════════════════════════
+//  USER BIOMETRICS
+// ═══════════════════════════════════════════════
+function bioProtocolOk(){
+  const p=location.protocol;
+  return p==='https:'||(p==='http:'&&(location.hostname==='localhost'||location.hostname==='127.0.0.1'));
+}
+function hasBioApi(){
+  return bioProtocolOk()&&!!window.PublicKeyCredential&&!!navigator.credentials?.create;
+}
+function userBioKey(email){return 'lp_bio_'+btoa(email.toLowerCase());}
+function userBioRpKey(email){return 'lp_bio_rp_'+btoa(email.toLowerCase());}
+function getUserBioCred(email){return localStorage.getItem(userBioKey(email));}
+function b64url(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+function b64decode(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer;}
+function getBioRpId(){const h=location.hostname;return(h&&h!==''&&!h.includes('/'))?h:'localhost';}
+
+// Show or hide the bio login button based on whether the email has an enrolled cred
+function updateBioLoginBtn(){
+  const emailEl=document.getElementById('inp-email');
+  const email=(emailEl?.value||'').trim().toLowerCase();
+  const wrap=document.getElementById('bio-login-wrap');
+  if(!wrap) return;
+  if(!isLogin){wrap.style.display='none';return;}
+  if(hasBioApi()&&email&&getUserBioCred(email)){
+    wrap.style.display='block';
+    document.getElementById('bio-btn-txt').textContent='Sign in with Fingerprint / Face ID';
+  } else {
+    wrap.style.display='none';
+  }
+}
+
+// Attach listener to email field to update bio button visibility
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inp-email')?.addEventListener('input',updateBioLoginBtn);
+});
+// Also call on blur
+document.getElementById('inp-email')?.addEventListener('blur',updateBioLoginBtn);
+
+// Bio LOGIN
+async function bioLoginUser(){
+  const email=(document.getElementById('inp-email').value||'').trim().toLowerCase();
+  if(!email){showAuthErr('Enter your email first, then use biometric');return;}
+  const credId=getUserBioCred(email);
+  if(!credId){toast('No biometrics found for this account','warn');return;}
+  if(!hasBioApi()){toast('⚠️ Deploy to HTTPS to use biometrics','err');return;}
+  try{
+    const rpId=localStorage.getItem(userBioRpKey(email))||getBioRpId();
+    await navigator.credentials.get({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      rpId,
+      allowCredentials:[{type:'public-key',id:b64decode(credId)}],
+      userVerification:'preferred',
+      timeout:60000
+    }});
+    // Verified — log in
+    const user=DB.getUser(email);
+    if(!user){showAuthErr('Account not found');return;}
+    curUser=user;
+    document.getElementById('disp-name').textContent=curUser.name.split(' ')[0];
+    document.getElementById('disp-av').textContent=curUser.name[0].toUpperCase();
+    document.getElementById('wa-float').classList.add('show');
+    refreshBalance();renderHistory();renderPlans();
+    goScreen('screen-app');
+    toast('👆 Biometric login successful!');
+  }catch(e){
+    if(e.name==='NotAllowedError'||e.name==='AbortError') toast('⚠️ Biometric cancelled','warn');
+    else toast('Biometric failed: '+e.message,'err');
+  }
+}
+
+// After password login — maybe offer bio setup
+function maybeProposeBio(email){
+  if(!hasBioApi()) return;
+  if(getUserBioCred(email)) return; // already set up
+  if(localStorage.getItem('lp_bio_skip_'+btoa(email))) return; // user said don't ask
+  // Show prompt after a short delay
+  setTimeout(()=>{document.getElementById('bio-setup-overlay').classList.add('open');},700);
+}
+
+function closeBioPrompt(permanent){
+  document.getElementById('bio-setup-overlay').classList.remove('open');
+  if(permanent&&curUser) localStorage.setItem('lp_bio_skip_'+btoa(curUser.email),'1');
+}
+
+async function doEnableBiometrics(){
+  if(!hasBioApi()){toast('⚠️ Biometrics require HTTPS deployment','err');closeBioPrompt(false);return;}
+  if(!curUser){closeBioPrompt(false);return;}
+  try{
+    const rpId=getBioRpId();
+    const cred=await navigator.credentials.create({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      rp:{name:'Litepay',id:rpId},
+      user:{
+        id:new TextEncoder().encode('lp-'+curUser.email),
+        name:curUser.email,
+        displayName:curUser.name
+      },
+      pubKeyCredParams:[{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
+      authenticatorSelection:{userVerification:'preferred',residentKey:'discouraged'},
+      timeout:60000
+    }});
+    localStorage.setItem(userBioKey(curUser.email),b64url(cred.rawId));
+    localStorage.setItem(userBioRpKey(curUser.email),rpId);
+    closeBioPrompt(false);
+    toast('✅ Biometric login enabled! Use it next time you sign in.');
+  }catch(e){
+    if(e.name==='NotAllowedError'||e.name==='AbortError') toast('⚠️ Setup cancelled','warn');
+    else toast('Setup failed: '+e.message,'err');
+    closeBioPrompt(false);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PAYMENT BIOMETRIC CONFIRMATION
+// ═══════════════════════════════════════════════
+let _pendingPayBtn=null;
+let _pendingPayEvent=null;
+
+function doBuy(btn){
+  // Override: intercept buy and route through biometric if enrolled
+  const phone=document.getElementById('ph-inp').value.trim();
+  refreshBalance();
+  if(!curUser||curUser.balance<selAmt){
+    toast('❌ Insufficient balance. Please fund your wallet.','err'); return;
+  }
+  if(hasBioApi()&&curUser&&getUserBioCred(curUser.email)){
+    // Require biometric before payment
+    _pendingPayBtn=btn;
+    _pendingPayEvent=event;
+    const detail=selType==='data'?(selPlan||'Data Plan'):(selNet?.toUpperCase()+' Airtime');
+    document.getElementById('pbo-amount').textContent='₦'+selAmt.toLocaleString();
+    document.getElementById('pbo-detail').textContent=detail+' → '+(phone.startsWith('0')?'+234'+phone.slice(1):'+234'+phone);
+    document.getElementById('pay-bio-overlay').classList.add('open');
+  } else {
+    // No biometrics — proceed directly
+    _executeBuy(btn, event);
+  }
+}
+
+async function confirmPayWithBio(){
+  if(!curUser) return;
+  const credId=getUserBioCred(curUser.email);
+  if(!credId){cancelPayBio();_executeBuy(_pendingPayBtn,_pendingPayEvent);return;}
+  const bioBtn=document.getElementById('pbo-bio-btn');
+  bioBtn.disabled=true;
+  bioBtn.innerHTML='<div class="spinner"></div> Verifying…';
+  try{
+    const rpId=localStorage.getItem(userBioRpKey(curUser.email))||getBioRpId();
+    await navigator.credentials.get({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      rpId,
+      allowCredentials:[{type:'public-key',id:b64decode(credId)}],
+      userVerification:'preferred',
+      timeout:60000
+    }});
+    document.getElementById('pay-bio-overlay').classList.remove('open');
+    bioBtn.disabled=false;
+    bioBtn.innerHTML='<span>👆</span> Verify &amp; Pay';
+    _executeBuy(_pendingPayBtn,_pendingPayEvent);
+  }catch(e){
+    bioBtn.disabled=false;
+    bioBtn.innerHTML='<span>👆</span> Verify &amp; Pay';
+    if(e.name==='NotAllowedError'||e.name==='AbortError') toast('⚠️ Biometric cancelled. Payment not sent.','warn');
+    else toast('Verification failed: '+e.message,'err');
+  }
+}
+
+function cancelPayBio(){
+  document.getElementById('pay-bio-overlay').classList.remove('open');
+  toast('Payment cancelled','warn');
+}
+
+async function _executeBuy(btn, ev){
+  if(!btn) return;
+  const phone=document.getElementById('ph-inp').value.trim();
+  ripple(btn,ev||{});
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Processing…';
+
+  DB.updateBalance(curUser.email,-selAmt);
+  refreshBalance();
+
+  const reqId='LP'+Date.now()+Math.random().toString(36).slice(2,7).toUpperCase();
+  const phoneClean=phone.startsWith('0')?phone:'0'+phone;
+
+  let payload;
+  if(selType==='airtime'){
+    payload={request_id:reqId,serviceID:VT_SERVICE[selNet],amount:selAmt,phone:phoneClean};
+  } else {
+    payload={request_id:reqId,serviceID:VT_SERVICE[selNet+'-data']||selNet+'-data',billersCode:phoneClean,variation_code:selVariation||'',amount:selAmt,phone:phoneClean};
+  }
+
+  try{
+    const res=await fetch(`${CFG.VTPASS_BASE}/pay`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','api-key':CFG.VTPASS_API_KEY,'public-key':CFG.VTPASS_PUBLIC_KEY,'secret-key':CFG.VTPASS_SECRET_KEY},
+      body:JSON.stringify(payload)
+    });
+    const data=await res.json();
+    const code=data?.code||data?.response_description||'';
+    const success=(code==='000'||code==='099'||data?.content?.transactions?.status==='delivered');
+    if(success){
+      const tx={id:reqId,userEmail:curUser.email,type:selType,network:selNet.toUpperCase(),phone:phoneClean,amount:selAmt,plan:selPlan,status:'success',vtpassRef:data?.requestId||reqId,time:Date.now()};
+      DB.addTx(tx); renderHistory();
+      const fmt=phoneClean.startsWith('0')?'+234'+phoneClean.slice(1):'+234'+phoneClean;
+      toast(`✅ ₦${selAmt.toLocaleString()} ${selType}${selPlan?' ('+selPlan+')':''} → ${fmt}`);
+    } else {
+      DB.updateBalance(curUser.email,selAmt); refreshBalance();
+      const tx={id:reqId,userEmail:curUser.email,type:selType,network:selNet.toUpperCase(),phone:phoneClean,amount:selAmt,plan:selPlan,status:'failed',time:Date.now()};
+      DB.addTx(tx); renderHistory();
+      toast('❌ Transaction failed. Wallet refunded.','err');
+    }
+  }catch(err){
+    DB.updateBalance(curUser.email,selAmt); refreshBalance();
+    toast('❌ Network error. Wallet refunded.','err');
+  }
+  btn.textContent='⚡ Recharge Now'; btn.disabled=true;
+  selAmt=0; selPlan=null; selVariation=null;
+  document.querySelectorAll('.amt-btn,.plan-card').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('cust-air').value='';
+  document.getElementById('cust-data').value='';
+}
+
+// Auto-login if session exists
+(function(){
+  const lastEmail=localStorage.getItem('lp_session');
+  if(lastEmail){
+    const u=DB.getUser(lastEmail);
+    if(u){
+      curUser=u;
+      document.getElementById('disp-name').textContent=u.name.split(' ')[0];
+      document.getElementById('disp-av').textContent=u.name[0].toUpperCase();
+      document.getElementById('wa-float').classList.add('show');
+      refreshBalance(); renderHistory(); renderPlans();
+      goScreen('screen-app');
+      // Don't offer bio on auto-login — they're already in
+    }
+  }
+})();
+
+// Save session on login
+const _origHandleAuth=handleAuth;
+// Patch to save session
+const _goScreen=goScreen;
+window.goScreen=function(id){
+  if(id==='screen-app'&&curUser){localStorage.setItem('lp_session',curUser.email);renderPlans();}
+  _goScreen(id);
+};
+window.logout=function(){
+  localStorage.removeItem('lp_session');
+  curUser=null; selNet=null; selAmt=0; selPlan=null;
+  document.getElementById('wa-float').classList.remove('show');
+  goScreen('screen-auth');
+};
+}
+
+// ══════════════════════════════════════════════════
+//  ADMIN JS
+// ══════════════════════════════════════════════════
+if(IS_ADMIN){
+  function initAdmin(){
+    const passEl=document.getElementById('adm-pass');
+    if(passEl) passEl.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+    document.querySelectorAll('#admin-root .modal').forEach(m=>{
+      m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+    });
+    initAdminSidebar();
+    updateBioUI();
+  }
+
+// ══════════════════════════════════════
+//  DEFAULT PLANS
+// ══════════════════════════════════════
+// DEFAULT_PLANS and getPlans() defined in shared section
+
+// ══════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════
+function getAdminPass(){return localStorage.getItem('lp_admin_pass')||'litepay2024';}
+
+function doLogin(){
+  const p=document.getElementById('adm-pass').value;
+  if(p===getAdminPass()){enterDashboard();}
+  else{document.getElementById('l-err').classList.add('show');document.getElementById('adm-pass').value='';}
+}
+
+function enterDashboard(){
+  document.getElementById('login-wrap').style.display='none';
+  document.getElementById('shell').style.display='flex';
+  loadDashboard();
+}
+
+function doLogout(){
+  document.getElementById('shell').style.display='none';
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('l-err').classList.remove('show');
+}
+
+// adm-pass listener attached in initAdmin()
+
+// ══════════════════════════════════════
+//  BIOMETRICS (WebAuthn)
+// ══════════════════════════════════════
+// ── Biometrics (WebAuthn) ──
+// WebAuthn requires HTTPS or localhost. Content:// and file:// URLs won't work.
+function getBioProtocolOk(){
+  const p=location.protocol;
+  return p==='https:'||p==='http:'&&(location.hostname==='localhost'||location.hostname==='127.0.0.1');
+}
+function hasBioSupport(){
+  return getBioProtocolOk()&&!!window.PublicKeyCredential&&!!navigator.credentials&&!!navigator.credentials.create;
+}
+function getBioCredId(){return localStorage.getItem('lp_bio_cred');}
+// b64url/b64decode defined in shared section
+// getBioRpId() defined in shared section
+
+function updateBioUI(){
+  const has=getBioCredId();
+  const loginBtn=document.getElementById('bio-login-btn');
+  const loginIco=document.getElementById('bio-icon');
+  const loginTxt=document.getElementById('bio-login-txt');
+  const statusEl=document.getElementById('bio-status-display');
+  const setupBtn=document.getElementById('bio-setup-btn');
+  const removeBtn=document.getElementById('bio-remove-btn');
+
+  if(!getBioProtocolOk()){
+    // Opened from file/content URL — biometrics can't work
+    if(loginBtn){loginBtn.disabled=true;loginIco.textContent='⚠️';loginTxt.textContent='Deploy to HTTPS to enable biometrics';}
+    if(statusEl){statusEl.className='bio-status none';statusEl.textContent='⚠️ Biometrics require HTTPS. Deploy this file to a web server or Netlify to enable.';}
+    if(setupBtn) setupBtn.disabled=true;
+    return;
+  }
+  if(!hasBioSupport()){
+    if(loginBtn){loginBtn.disabled=true;loginTxt.textContent='Biometrics not supported';}
+    if(statusEl){statusEl.className='bio-status none';statusEl.textContent='Your browser does not support WebAuthn';}
+    if(setupBtn) setupBtn.disabled=true;
+    return;
+  }
+  if(has){
+    if(loginBtn){loginBtn.disabled=false;loginIco.textContent='👆';loginTxt.textContent='Use Fingerprint / Face ID';}
+    if(statusEl){statusEl.className='bio-status enrolled';statusEl.textContent='✅ Biometric login enrolled and active';}
+    if(setupBtn) setupBtn.style.display='none';
+    if(removeBtn) removeBtn.style.display='block';
+  } else {
+    if(loginBtn){loginBtn.disabled=true;loginIco.textContent='🔒';loginTxt.textContent='Biometrics not set up';}
+    if(statusEl){statusEl.className='bio-status none';statusEl.textContent='Not enrolled · Use Settings to set up after signing in';}
+    if(setupBtn){setupBtn.style.display='block';setupBtn.disabled=false;}
+    if(removeBtn) removeBtn.style.display='none';
+  }
+}
+
+async function setupBiometrics(){
+  if(!getBioProtocolOk()){toast('⚠️ Biometrics require HTTPS. Deploy to Netlify or a web server first.','err');return;}
+  if(!hasBioSupport()){toast('WebAuthn not supported in this browser','err');return;}
+  try{
+    const challenge=crypto.getRandomValues(new Uint8Array(32));
+    const rpId=getBioRpId();
+    const cred=await navigator.credentials.create({publicKey:{
+      challenge,
+      rp:{name:'Litepay Admin',id:rpId},
+      user:{id:new TextEncoder().encode('litepay-admin'),name:'admin@litepay',displayName:'Litepay Admin'},
+      pubKeyCredParams:[{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
+      authenticatorSelection:{
+        userVerification:'preferred', // 'preferred' not 'required' — more compatible
+        residentKey:'discouraged'
+      },
+      timeout:60000
+    }});
+    localStorage.setItem('lp_bio_cred',b64url(cred.rawId));
+    localStorage.setItem('lp_bio_rpid',rpId);
+    updateBioUI();
+    toast('✅ Biometric login set up successfully!');
+  }catch(e){
+    console.error('Bio setup error:',e);
+    if(e.name==='NotAllowedError'||e.name==='AbortError') toast('⚠️ Setup cancelled or timed out. Try again.','warn');
+    else if(e.name==='InvalidStateError') toast('Biometric already registered on this device','warn');
+    else if(e.name==='NotSupportedError') toast('This device does not support biometric authentication','err');
+    else toast('Setup failed: '+e.message,'err');
+  }
+}
+
+async function bioLogin(){
+  if(!getBioProtocolOk()){toast('⚠️ Biometrics require HTTPS deployment','err');return;}
+  const credId=getBioCredId();
+  if(!credId){toast('No biometrics enrolled','warn');return;}
+  try{
+    const challenge=crypto.getRandomValues(new Uint8Array(32));
+    const rpId=localStorage.getItem('lp_bio_rpid')||getBioRpId();
+    await navigator.credentials.get({publicKey:{
+      challenge,rpId,
+      allowCredentials:[{type:'public-key',id:b64decode(credId)}],
+      userVerification:'preferred',
+      timeout:60000
+    }});
+    enterDashboard();
+  }catch(e){
+    console.error('Bio login error:',e);
+    if(e.name==='NotAllowedError'||e.name==='AbortError') toast('⚠️ Biometric cancelled. Use password instead.','warn');
+    else toast('Biometric failed: '+e.message,'err');
+  }
+}
+
+function removeBiometrics(){
+  if(!confirm('Remove biometric login?')) return;
+  localStorage.removeItem('lp_bio_cred');
+  localStorage.removeItem('lp_bio_rpid');
+  updateBioUI();
+  toast('Biometric login removed','warn');
+}
+
+// ══════════════════════════════════════
+//  SIDEBAR TOGGLE
+// ══════════════════════════════════════
+function toggleSb(){
+  const sb=document.getElementById('sb');
+  sb.classList.toggle('collapsed');
+  localStorage.setItem('lp_sb_collapsed',sb.classList.contains('collapsed')?'1':'0');
+}
+
+// Restore sidebar state
+function initAdminSidebar(){
+  if(localStorage.getItem('lp_sb_collapsed')==='1'){const sb=document.getElementById('sb');if(sb)sb.classList.add('collapsed');}
+}
+
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+function goPage(name,btn){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pg-'+name).classList.add('active');
+  ({dashboard:loadDashboard,users:loadUsers,transactions:loadTxs,credit:loadCreditPage,plans:loadPlansEditor,settings:loadSettings}[name]||(() => {}))();
+}
+
+// ══════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════
+function loadDashboard(){
+  const users=DB.list(),txs=DB.getTxs();
+  document.getElementById('s-users').textContent=users.length;
+  document.getElementById('s-bal').textContent='₦'+users.reduce((s,u)=>s+(u.balance||0),0).toLocaleString();
+  document.getElementById('s-orders').textContent=txs.filter(t=>t.type==='airtime'||t.type==='data').length;
+  document.getElementById('s-rev').textContent='₦'+txs.filter(t=>t.type==='fund'&&t.status==='success'&&!t.adminCredit).reduce((s,t)=>s+t.amount,0).toLocaleString();
+  const uMap=DB.getUsers(),tbody=document.getElementById('dash-tbody'),recent=txs.slice(0,25);
+  if(!recent.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet</td></tr>';return;}
+  tbody.innerHTML=recent.map(tx=>txRow(tx,uMap)).join('');
+}
+
+function txRow(tx,uMap){
+  const u=uMap[tx.userEmail]||{name:tx.userEmail||'?'};
+  const isAdminDebit=tx.adminDebit===true;
+  const typeLbl=isAdminDebit?'<span class="bdg fail">⚙ Debit</span>':(tx.adminCredit?'<span class="bdg fund">⚙ Credit</span>':(tx.type==='fund'?'<span class="bdg fund">💰 Fund</span>':(tx.type==='airtime'?'<span class="bdg air">📞 Air</span>':'<span class="bdg dat">📶 Data</span>')));
+  const stBdg=`<span class="bdg ${tx.status==='success'?'ok':tx.status==='failed'?'fail':'pend'}">${tx.status}</span>`;
+  const netCls=(tx.network||'').toLowerCase().replace('9mobile','nine');
+  const netDot=tx.network?`<span class="ndot ${netCls}"></span>`:'';
+  const sign=(tx.type==='fund'&&!isAdminDebit)?'+':'−';
+  const col=sign==='+'?'color:var(--ok)':'color:var(--err)';
+  return `<tr>
+    <td><div class="td-b" style="font-size:12px">${(u.name||'').split(' ')[0]}</div><div class="td-m">${tx.userEmail||''}</div></td>
+    <td>${typeLbl}</td><td>${netDot}${tx.network||'—'}</td>
+    <td class="td-m">${tx.phone||tx.note||'—'}</td>
+    <td style="font-family:'Syne',sans-serif;font-weight:700;${col}">${sign}₦${tx.amount.toLocaleString()}</td>
+    <td>${stBdg}</td>
+    <td class="td-m" style="white-space:nowrap;font-size:11px">${fmtTime(tx.time)}</td>
+  </tr>`;
+}
+
+// ══════════════════════════════════════
+//  USERS
+// ══════════════════════════════════════
+let _users=[];
+function loadUsers(){_users=DB.list();renderUsers();}
+function renderUsers(){
+  const q=(document.getElementById('u-search').value||'').toLowerCase();
+  const f=_users.filter(u=>!q||(u.name+u.email+(u.phone||'')).toLowerCase().includes(q));
+  const tbody=document.getElementById('users-tbody');
+  if(!f.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6">No users found</td></tr>';return;}
+  tbody.innerHTML=f.map(u=>`<tr>
+    <td class="td-b">${u.name}</td><td class="td-m">${u.email}</td><td class="td-m">${u.phone||'—'}</td>
+    <td><span style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--ok)">₦${(u.balance||0).toLocaleString()}</span></td>
+    <td class="td-m">${new Date(u.createdAt||Date.now()).toLocaleDateString('en-NG')}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="ab cr" onclick="openCreditModal('${u.email}',1)">＋ Credit</button>
+      <button class="ab db" onclick="openCreditModal('${u.email}',-1)">− Debit</button>
+      <button class="ab vw" onclick="viewUser('${u.email}')">View</button>
+    </td>
+  </tr>`).join('');
+}
+
+function viewUser(email){
+  const u=DB.getUser(email); if(!u) return;
+  const txs=DB.getTxs().filter(t=>t.userEmail===email);
+  document.getElementById('mod-u-detail').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${[['Name',u.name],['Balance','₦'+(u.balance||0).toLocaleString()],['Phone',u.phone||'—'],['Orders',txs.filter(t=>t.type!=='fund').length]].map(([l,v])=>`
+      <div style="background:var(--surf);border:1px solid var(--b);border-radius:8px;padding:10px">
+        <div style="font-size:9px;color:var(--m2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">${l}</div>
+        <div style="font-weight:600;font-size:13px">${v}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--m2)">Email: ${u.email} &nbsp;·&nbsp; NIN: ${u.nin||'—'}</div>`;
+  document.getElementById('mod-user').dataset.email=email;
+  openModal('mod-user');
+}
+
+let _mt={email:'',sign:1};
+function openCreditModal(email,sign){
+  const u=DB.getUser(email); if(!u) return;
+  _mt={email,sign};
+  document.getElementById('mod-c-title').textContent=sign>0?'Credit Wallet':'Debit Wallet';
+  document.getElementById('mod-c-sub').textContent=sign>0?'Add funds to user wallet':'Deduct from user wallet';
+  document.getElementById('mod-c-user').value=u.name+' · '+email;
+  document.getElementById('mod-c-bal').value='₦'+(u.balance||0).toLocaleString();
+  document.getElementById('mod-c-amt').value='';
+  document.getElementById('mod-c-note').value='';
+  document.getElementById('mod-c-btn').textContent=sign>0?'Confirm Credit':'Confirm Debit';
+  document.getElementById('mod-c-btn').className='ab '+(sign>0?'suc':'dan');
+  openModal('mod-credit');
+}
+
+function quickCredit(){const e=document.getElementById('mod-user').dataset.email;closeModal('mod-user');openCreditModal(e,1);}
+
+function confirmCredit(){
+  const amt=parseInt(document.getElementById('mod-c-amt').value);
+  const note=document.getElementById('mod-c-note').value||'Admin adjustment';
+  if(!amt||amt<=0){toast('Enter a valid amount','warn');return;}
+  DB.credit(_mt.email,_mt.sign*amt,note);
+  closeModal('mod-credit');
+  toast(`✅ Wallet ${_mt.sign>0?'credited':'debited'}: ₦${amt.toLocaleString()}`);
+  loadUsers(); loadCreditPage(); loadDashboard();
+}
+
+// ══════════════════════════════════════
+//  TRANSACTIONS
+// ══════════════════════════════════════
+let _txs=[];
+function loadTxs(){_txs=DB.getTxs();renderTxs();}
+function renderTxs(){
+  const q=(document.getElementById('tx-search').value||'').toLowerCase();
+  const typeF=document.getElementById('tx-type').value,stF=document.getElementById('tx-status').value;
+  const uMap=DB.getUsers();
+  let f=_txs;
+  if(q) f=f.filter(t=>((uMap[t.userEmail]?.name||'')+t.userEmail+(t.phone||'')).toLowerCase().includes(q));
+  if(typeF) f=f.filter(t=>t.type===typeF);
+  if(stF) f=f.filter(t=>t.status===stF);
+  const tbody=document.getElementById('txs-tbody');
+  if(!f.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No transactions found</td></tr>';return;}
+  const uMap2=DB.getUsers();
+  tbody.innerHTML=f.slice(0,100).map(tx=>{
+    const u=uMap2[tx.userEmail]||{name:tx.userEmail};
+    const isAdminDebit=tx.adminDebit===true;
+    const typeLbl=isAdminDebit?'<span class="bdg fail">⚙ Debit</span>':(tx.adminCredit?'<span class="bdg fund">⚙ Credit</span>':(tx.type==='fund'?'<span class="bdg fund">💰 Fund</span>':(tx.type==='airtime'?'<span class="bdg air">📞 Air</span>':'<span class="bdg dat">📶 Data</span>')));
+    const stBdg=`<span class="bdg ${tx.status==='success'?'ok':tx.status==='failed'?'fail':'pend'}">${tx.status}</span>`;
+    const netCls=(tx.network||'').toLowerCase().replace('9mobile','nine');
+    const netDot=tx.network?`<span class="ndot ${netCls}"></span>`:'';
+    const sign=(tx.type==='fund'&&!isAdminDebit)?'+':'−';
+    const col=sign==='+'?'color:var(--ok)':'color:var(--err)';
+    return `<tr>
+      <td class="td-m" style="font-family:monospace;font-size:10px">${(tx.id||'').slice(-8)}</td>
+      <td><div style="font-size:12px;font-weight:600">${(u.name||'').split(' ')[0]}</div><div class="td-m">${tx.userEmail}</div></td>
+      <td>${typeLbl}</td><td>${netDot}${tx.network||'—'}</td>
+      <td class="td-m" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tx.plan||tx.phone||tx.note||'—'}</td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;${col}">${sign}₦${tx.amount.toLocaleString()}</td>
+      <td>${stBdg}</td>
+      <td class="td-m" style="white-space:nowrap;font-size:11px">${fmtTime(tx.time)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+//  CREDIT PAGE
+// ══════════════════════════════════════
+function loadCreditPage(){
+  const users=DB.list();
+  const sel=document.getElementById('c-user');
+  sel.innerHTML=users.length?users.map(u=>`<option value="${u.email}">${u.name} — ₦${(u.balance||0).toLocaleString()}</option>`).join(''):'<option value="">No users yet</option>';
+  const tbody=document.getElementById('bal-tbody');
+  if(!users.length){tbody.innerHTML='<tr class="empty-row"><td colspan="4">No users yet</td></tr>';return;}
+  tbody.innerHTML=users.sort((a,b)=>(b.balance||0)-(a.balance||0)).map(u=>`<tr>
+    <td class="td-b">${u.name}</td><td class="td-m">${u.email}</td>
+    <td><span style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--ok)">₦${(u.balance||0).toLocaleString()}</span></td>
+    <td style="display:flex;gap:5px">
+      <button class="ab cr" onclick="openCreditModal('${u.email}',1)">＋ Credit</button>
+      <button class="ab db" onclick="openCreditModal('${u.email}',-1)">− Debit</button>
+    </td>
+  </tr>`).join('');
+  const logs=DB.getTxs().filter(t=>t.adminCredit||t.adminDebit).slice(0,30);
+  const logEl=document.getElementById('credit-log'),uMap=DB.getUsers();
+  if(!logs.length){logEl.innerHTML='<div class="log-empty">No admin adjustments yet</div>';return;}
+  logEl.innerHTML=logs.map(t=>{
+    const u=uMap[t.userEmail]||{name:t.userEmail};
+    return `<div class="log-item">
+      <div><div class="log-name">${(u.name||'').split(' ')[0]} <span class="td-m">${t.userEmail}</span></div><div class="log-note">${t.note||'Admin adjustment'}</div></div>
+      <div><div class="log-amt" style="color:${t.adminDebit?'var(--err)':'var(--ok)'}">${t.adminDebit?'−':'+'  }₦${t.amount.toLocaleString()}</div><div class="log-time">${fmtTime(t.time)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function doCredit(){
+  const email=document.getElementById('c-user').value,amt=parseInt(document.getElementById('c-amt').value),note=document.getElementById('c-note').value||'Manual credit';
+  if(!email){toast('Select a user','warn');return;}
+  if(!amt||amt<=0){toast('Enter a valid amount','warn');return;}
+  DB.credit(email,amt,note);toast(`✅ ₦${amt.toLocaleString()} credited to ${email}`);loadCreditPage();loadDashboard();
+}
+function doDebit(){
+  const email=document.getElementById('c-user').value,amt=parseInt(document.getElementById('c-amt').value),note=document.getElementById('c-note').value||'Admin debit';
+  if(!email){toast('Select a user','warn');return;}
+  if(!amt||amt<=0){toast('Enter a valid amount','warn');return;}
+  const u=DB.getUser(email);
+  if((u?.balance||0)<amt){toast('User balance less than debit amount','err');return;}
+  DB.credit(email,-amt,note);toast(`✅ ₦${amt.toLocaleString()} debited from ${email}`);loadCreditPage();loadDashboard();
+}
+
+// ══════════════════════════════════════
+//  DATA PLANS EDITOR
+// ══════════════════════════════════════
+let _editNet='mtn';
+
+function loadPlansEditor(){
+  switchPlanNet('mtn', document.querySelector('.net-tab[data-net="mtn"]'));
+}
+
+function switchPlanNet(net, btn){
+  _editNet=net;
+  document.querySelectorAll('.net-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlanRows(net);
+}
+
+function renderPlanRows(net){
+  const plans=getPlans();
+  const netPlans=plans[net]||[];
+  const wrap=document.getElementById('plan-rows');
+  wrap.innerHTML=netPlans.map((p,i)=>`
+    <div class="plan-row" id="pr-${i}">
+      <input value="${p.size}" placeholder="e.g. 1GB" id="ps-${i}" title="Data size"/>
+      <input value="${p.validity}" placeholder="e.g. 30 days" id="pv-${i}" title="Validity"/>
+      <input type="number" value="${p.price}" class="plan-price-inp" min="1" id="pp-${i}" title="Price"/>
+      <button class="del-plan-btn" onclick="deletePlanRow(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+function addPlanRow(){
+  const plans=getPlans();
+  const net=_editNet;
+  if(!plans[net]) plans[net]=[];
+  plans[net].push({size:'',validity:'30 days',price:500,variation:net+'-new-'+Date.now()});
+  localStorage.setItem('lp_plans',JSON.stringify(plans));
+  renderPlanRows(net);
+}
+
+function deletePlanRow(idx){
+  const plans=getPlans();
+  plans[_editNet].splice(idx,1);
+  localStorage.setItem('lp_plans',JSON.stringify(plans));
+  renderPlanRows(_editNet);
+}
+
+function savePlans(){
+  const plans=getPlans();
+  const net=_editNet;
+  const existing=plans[net]||[];
+  const updated=existing.map((_,i)=>{
+    const size=(document.getElementById(`ps-${i}`)?.value||'').trim();
+    const validity=(document.getElementById(`pv-${i}`)?.value||'').trim();
+    const price=parseInt(document.getElementById(`pp-${i}`)?.value||0)||0;
+    const variation=net+'-'+size.toLowerCase().replace(/[^a-z0-9.]/g,'')+'-'+price;
+    return{size,validity,price,variation};
+  }).filter(p=>p.size&&p.price>0);
+  plans[net]=updated;
+  localStorage.setItem('lp_plans',JSON.stringify(plans));
+  renderPlanRows(net);
+  toast(`✅ ${net.toUpperCase()} plans saved — ${updated.length} plans active`);
+}
+
+function resetPlans(){
+  if(!confirm('Reset all plans to defaults for '+_editNet.toUpperCase()+'?')) return;
+  const plans=getPlans();
+  plans[_editNet]=JSON.parse(JSON.stringify(DEFAULT_PLANS[_editNet]||[]));
+  localStorage.setItem('lp_plans',JSON.stringify(plans));
+  renderPlanRows(_editNet);
+  toast('Plans reset to defaults for '+_editNet.toUpperCase());
+}
+
+// ══════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════
+function loadSettings(){
+  const s=getSettings();
+  document.getElementById('s-ps').value=s.ps_pk||'';
+  document.getElementById('s-vt').value=s.vt_key||'';
+  document.getElementById('s-vtm').value=s.vt_mode||'sandbox';
+  document.getElementById('s-wa').value=s.wa_num||'07047096637';
+  updateBioUI();
+}
+function getSettings(){try{return JSON.parse(localStorage.getItem('lp_settings')||'{}')}catch{return{}}}
+function saveSetting(key,id){const s=getSettings();s[key]=document.getElementById(id).value.trim();localStorage.setItem('lp_settings',JSON.stringify(s));toast(`✅ ${key} saved`);}
+function saveVtMode(){const s=getSettings();s.vt_mode=document.getElementById('s-vtm').value;localStorage.setItem('lp_settings',JSON.stringify(s));toast('✅ VTpass mode saved');}
+function changePass(){
+  const p1=document.getElementById('new-p1').value,p2=document.getElementById('new-p2').value;
+  if(!p1||!p2){toast('Fill both fields','warn');return;}
+  if(p1!==p2){toast('Passwords do not match','err');return;}
+  if(p1.length<6){toast('Minimum 6 characters','warn');return;}
+  localStorage.setItem('lp_admin_pass',p1);
+  document.getElementById('new-p1').value='';document.getElementById('new-p2').value='';
+  toast('✅ Password updated');
+}
+function confirmClear(){
+  if(!confirm('Delete ALL users and transactions? Cannot be undone.')) return;
+  ['lp_users','lp_transactions','lp_session'].forEach(k=>localStorage.removeItem(k));
+  toast('All data cleared','warn');loadDashboard();
+}
+
+// ══════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('#admin-root .modal').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+// keydown Escape handled in shared section
+
+function fmtTime(ts){const d=new Date(ts);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+d.toLocaleDateString('en-NG');}
+
+// Init bio UI on load
+updateBioUI();
+
+// Auto-refresh dashboard every 30s when visible
+setInterval(()=>{const sh=document.getElementById('shell');if(sh&&sh.style.display!=='none'&&document.getElementById('pg-dashboard')?.classList.contains('active'))loadDashboard();},30000);
+
+  initAdmin();
+}
+</script>
+</body>
+</html>
